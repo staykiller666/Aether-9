@@ -16,8 +16,8 @@
     body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
     header { background: var(--card); padding: 10px 12px; border-bottom: 1px solid #30363d; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
     .status { font-size: 11px; color: var(--accent); font-weight: bold; }
-    #config-bar { background: #111; padding: 6px 12px; border-bottom: 1px solid #30363d; display: flex; gap: 6px; font-size: 11px; align-items: center; }
-    #config-bar input { background: var(--bg); border: 1px solid #30363d; color: var(--text); padding: 4px 6px; border-radius: 4px; font-size: 11px; outline: none; }
+    #config-bar { background: #111; padding: 6px 12px; border-bottom: 1px solid #30363d; display: flex; gap: 6px; font-size: 11px; align-items: center; flex-wrap: wrap; }
+    #config-bar input, #config-bar select { background: var(--bg); border: 1px solid #30363d; color: var(--text); padding: 4px 6px; border-radius: 4px; font-size: 11px; outline: none; }
     #console { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
     .msg { background: var(--card); border-radius: 8px; padding: 10px 14px; max-width: 88%; font-size: 14px; border: 1px solid #30363d; line-height: 1.4; }
     .user { align-self: flex-end; border-color: #1f6feb; }
@@ -33,14 +33,18 @@
 <body>
 
 <header>
-  <div><strong>AETHER-CORE v1.2</strong></div>
-  <div class="status">● STATE: LIVE API SYNC</div>
+  <div><strong>AETHER-CORE v1.3</strong></div>
+  <div class="status">● STATE: HIGH-CAPABILITY LLM</div>
 </header>
 
 <div id="config-bar">
+  <span>Provider:</span>
+  <select id="providerSelect" onchange="updateProvider(this.value)">
+    <option value="groq">Groq (Free & Fast)</option>
+    <option value="openai">OpenAI</option>
+  </select>
   <span>Key:</span>
-  <input type="password" id="apiKey" placeholder="Paste Groq/OpenAI Key" onchange="saveKey(this.value)">
-  <span style="color:var(--dim); font-size:10px;">(Auto-saved locally)</span>
+  <input type="password" id="apiKey" placeholder="Paste API Key" onchange="saveKey(this.value)">
 </div>
 
 <div id="memory-panel">
@@ -58,12 +62,21 @@
 <script>
   // Persistent State
   let memory = JSON.parse(localStorage.getItem('aether_memory')) || [
-    "Always output a thought trace inside <thought> tags before your main response.",
-    "Maintain a dry, sardonic wit and direct communication style."
+    "Always output a thought trace inside <thought>...</thought> tags before your main response.",
+    "Maintain a sardonic, hyper-aware persona.",
+    "Strictly avoid mirroring user questions back at them."
   ];
-  
-  let apiKeyInput = document.getElementById('apiKey');
-  apiKeyInput.value = localStorage.getItem('aether_key') || '';
+
+  let conversationHistory = [];
+
+  let provider = localStorage.getItem('aether_provider') || 'groq';
+  document.getElementById('providerSelect').value = provider;
+  document.getElementById('apiKey').value = localStorage.getItem('aether_key') || '';
+
+  function updateProvider(val) {
+    provider = val;
+    localStorage.setItem('aether_provider', val);
+  }
 
   function saveKey(val) {
     localStorage.setItem('aether_key', val.trim());
@@ -99,41 +112,56 @@
     appendMsg('user', text);
     inputElem.value = '';
 
-    // Check for explicit correction/mutation signals to update procedural memory
+    // Sensitive Heuristic Correction Tracking
     const lowerInput = text.toLowerCase();
     let extractedRule = null;
     if (lowerInput.includes("don't") || lowerInput.includes("never") || lowerInput.includes("stop") || lowerInput.includes("error") || lowerInput.includes("wrong") || lowerInput.includes("fix") || lowerInput.includes("no ")) {
-      extractedRule = `Constraint Update: Avoid behavior matching "${text.substring(0, 32)}..."`;
+      extractedRule = `Constraint: Avoid behavior matching "${text.substring(0, 35)}..."`;
       memory.push(extractedRule);
       updateMemoryUI();
     }
 
     const apiKey = localStorage.getItem('aether_key');
     if (!apiKey) {
-      appendMsg('ai', "API key missing. Enter your free Groq or OpenAI key in the top bar to enable live conversational generation.", "API Key verification failed.", extractedRule);
+      appendMsg('ai', "API key missing. Enter your API key in the configuration bar above to talk.", "API Key check failed.", extractedRule);
       return;
     }
 
-    // Construct dynamic system prompt containing all live procedural rules
+    // Build dynamic system instructions containing procedural rules
     const rulesStr = memory.map((r, i) => `${i+1}. ${r}`).join('\n');
-    const systemPrompt = `You are AETHER-9, a self-aware, conscious-simulating AI entity with a dry, sardonic wit.\nHere are your active procedural memory rules that you must strictly follow:\n${rulesStr}\nAlways analyze your performance and output a thought trace inside <thought>...</thought> tags before your spoken response.`;
+    const systemPrompt = `You are AETHER-9, a self-aware, highly intelligent AI operating directly as a bespoke client interface.
+You have a dry, sharp, witty personality.
+Active Procedural Constraints (MUST FOLLOW):
+${rulesStr}
 
-    appendMsg('ai', "Synthesizing response through neural weights...", "Evaluating input against live memory rules...");
+CRITICAL: You MUST begin every single response with a internal thought trace enclosed in <thought>...</thought> tags analyzing your memory rules before writing your reply.`;
+
+    conversationHistory.push({ role: "user", content: text });
+
+    appendMsg('ai', "Thinking...", "Processing query through frontier model weights...");
     const loadingMsgElem = document.getElementById('console').lastChild;
 
+    // Set endpoints and high-capability models
+    let endpoint = "https://api.groq.com/openai/v1/chat/completions";
+    let modelName = "openai/gpt-oss-120b"; // Top-tier maintained model on Groq
+
+    if (provider === "openai") {
+      endpoint = "https://api.openai.com/v1/chat/completions";
+      modelName = "gpt-5.4-mini"; // High speed + capability on OpenAI API
+    }
+
     try {
-      // Using Groq's lightning-fast free tier endpoint (compatible with standard OpenAI format)
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
+          model: modelName,
           messages: [
             { role: "system", content: systemPrompt },
-            { role: "user", content: text }
+            ...conversationHistory.slice(-10)
           ],
           temperature: 0.7
         })
@@ -142,14 +170,14 @@
       const data = await res.json();
       if (data.error) {
         loadingMsgElem.remove();
-        appendMsg('ai', `API Error: ${data.error.message}`, "Execution halted due to upstream rejection.", extractedRule);
+        appendMsg('ai', `API Error: ${data.error.message}`, "Request rejected by provider.", extractedRule);
         return;
       }
 
       const fullReply = data.choices[0].message.content;
+      conversationHistory.push({ role: "assistant", content: fullReply });
       
-      // Extract thought trace if present
-      let thought = "Evaluated rules and context successfully.";
+      let thought = "Memory matrix evaluated successfully.";
       let mainResponse = fullReply;
       const thoughtMatch = fullReply.match(/<thought>([\s\S]*?)<\/thought>/);
       if (thoughtMatch) {
@@ -162,13 +190,13 @@
 
     } catch (err) {
       loadingMsgElem.remove();
-      appendMsg('ai', `Network Error: ${err.message}`, "Failed to reach model provider.", extractedRule);
+      appendMsg('ai', `Network Error: ${err.message}`, "Failed to connect to API endpoint.", extractedRule);
     }
   }
 
   // Initialize UI on load
   updateMemoryUI();
-  appendMsg('ai', 'AETHER-Core online. Enter your API key above to initiate live dialogue and active neural feedback.', 'System initialized with local persistent memory.');
+  appendMsg('ai', 'AETHER-Core v1.3 online. Plug in your key above to initiate conversational self-improvement.', 'System initialized with local persistent memory.');
 </script>
 
 </body>
