@@ -3,22 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <title>AETHER-Core Game Boy Terminal</title>
+  <title>AETHER-Core Game Boy Color</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
     :root {
-      --gb-body: #8b8b9e;
-      --gb-screen-bg: #8b956d;
-      --gb-screen-dark: #1b2612;
-      --gb-accent-red: #9e2a2b;
-      --gb-lcd-border: #3b4234;
+      --gbc-body: #7c2d96; /* Classic Atomic Purple / Berry GBC tone */
+      --gbc-body-shadow: #4a195c;
+      --gbc-screen-bg: #9bbc0f; /* Authentic GBC Greenish LCD */
+      --gbc-screen-dark: #0f380f;
+      --gbc-accent-btn: #333333;
+      --gbc-action-btn: #8b0000;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
     
     html, body {
-      background: #09090c;
+      background: #0d0d12;
       font-family: 'VT323', monospace;
       width: 100vw;
       height: 100vh;
@@ -28,144 +29,151 @@
       align-items: center;
     }
 
-    #gb-chassis {
-      background: var(--gb-body);
+    #gbc-chassis {
+      background: var(--gbc-body);
       width: 100%;
-      max-width: 400px;
+      max-width: 420px;
       height: 100vh;
-      max-height: 800px;
+      max-height: 860px;
       display: flex;
       flex-direction: column;
-      padding: 10px;
-      border: 3px solid #4a4a58;
+      padding: 14px;
+      border: 4px solid var(--gbc-body-shadow);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.8);
+      border-radius: 12px 12px 50px 12px;
     }
 
-    #gb-lens {
-      background: #232528;
-      border-radius: 8px 8px 24px 8px;
-      padding: 8px;
+    #gbc-lens {
+      background: #1c1c21;
+      border-radius: 10px 10px 30px 10px;
+      padding: 10px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.9);
       display: flex;
       flex-direction: column;
       flex: 1;
       min-height: 0;
-      margin-bottom: 6px;
+      margin-bottom: 10px;
     }
 
     .lens-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      color: #7b808a;
-      font-size: 12px;
-      margin-bottom: 3px;
+      color: #a0a0b0;
+      font-size: 13px;
+      margin-bottom: 4px;
+      letter-spacing: 1px;
     }
 
     .battery-led {
-      width: 7px;
-      height: 7px;
-      background: #00ff66;
+      width: 8px;
+      height: 8px;
+      background: #ff3333;
       border-radius: 50%;
-      box-shadow: 0 0 5px #00ff66;
+      box-shadow: 0 0 6px #ff3333;
       display: inline-block;
       margin-right: 4px;
     }
 
-    #gb-screen {
-      background: var(--gb-screen-bg);
-      border: 3px solid var(--gb-lcd-border);
+    #gbc-screen {
+      background: var(--gbc-screen-bg);
+      border: 3px solid #2b331f;
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      border-radius: 2px;
+      border-radius: 3px;
       position: relative;
     }
 
     #memory-bar {
-      background: rgba(0,0,0,0.15);
-      border-bottom: 2px solid var(--gb-screen-dark);
-      padding: 2px 6px;
-      font-size: 13px;
+      background: rgba(15, 56, 15, 0.15);
+      border-bottom: 2px solid var(--gbc-screen-dark);
+      padding: 3px 6px;
+      font-size: 14px;
       display: flex;
       justify-content: space-between;
       z-index: 3;
-      color: var(--gb-screen-dark);
+      color: var(--gbc-screen-dark);
       font-weight: bold;
     }
 
     #console {
       flex: 1;
       overflow-y: auto;
-      padding: 6px;
+      padding: 8px;
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 6px;
       z-index: 3;
     }
 
     .msg {
-      padding: 4px 6px;
+      padding: 5px 7px;
       border-radius: 2px;
-      font-size: 15px;
-      line-height: 1.1;
+      font-size: 16px;
+      line-height: 1.15;
       word-break: break-word;
-      color: var(--gb-screen-dark);
+      color: var(--gbc-screen-dark);
     }
 
     .user {
-      background: rgba(0,0,0,0.1);
-      border-left: 3px solid var(--gb-screen-dark);
+      background: rgba(15, 56, 15, 0.1);
+      border-left: 3px solid var(--gbc-screen-dark);
       align-self: flex-end;
       max-width: 90%;
     }
 
     .ai {
-      background: rgba(0,0,0,0.05);
-      border-left: 3px solid #3b5220;
+      background: rgba(15, 56, 15, 0.05);
+      border-left: 3px solid #2b4c1f;
       align-self: flex-start;
       max-width: 95%;
     }
 
     .thought {
-      font-size: 12px;
+      font-size: 13px;
       opacity: 0.85;
-      border-bottom: 1px dotted var(--gb-screen-dark);
-      margin-bottom: 2px;
+      border-bottom: 1px dotted var(--gbc-screen-dark);
+      margin-bottom: 3px;
     }
 
     .peripheral-badge {
-      font-size: 11px;
-      background: var(--gb-screen-dark);
-      color: var(--gb-screen-bg);
-      padding: 1px 3px;
-      margin-top: 2px;
+      font-size: 12px;
+      background: var(--gbc-screen-dark);
+      color: var(--gbc-screen-bg);
+      padding: 1px 4px;
+      margin-top: 3px;
       display: inline-block;
     }
 
     #config-panel {
-      background: #1d1e22;
-      padding: 4px 6px;
+      background: #261033;
+      padding: 5px 8px;
       display: flex;
-      gap: 4px;
-      border-top: 2px solid #333;
+      gap: 6px;
+      border-top: 2px solid #4a195c;
       align-items: center;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      border-radius: 4px;
     }
 
     #config-panel select, #config-panel input {
       background: #000;
-      color: var(--gb-screen-bg);
-      border: 1px solid #444;
+      color: #bfa1d2;
+      border: 1px solid #5a226d;
       font-family: 'VT323', monospace;
-      font-size: 13px;
+      font-size: 14px;
       padding: 3px;
       outline: none;
+      border-radius: 2px;
     }
 
-    #controls {
+    /* Controls & Keypad Deck */
+    #controls-deck {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 8px;
     }
 
     #input-row {
@@ -175,272 +183,42 @@
 
     #userInput {
       flex: 1;
-      background: var(--gb-screen-bg);
-      border: 2px solid var(--gb-lcd-border);
-      font-family: 'VT323', monospace;
-      font-size: 16px;
-      padding: 5px;
-      color: var(--gb-screen-dark);
-      outline: none;
-    }
-
-    .gb-btn {
-      background: var(--gb-accent-red);
-      color: #fff;
-      border: none;
+      background: var(--gbc-screen-bg);
+      border: 2px solid #2b331f;
       font-family: 'VT323', monospace;
       font-size: 18px;
-      padding: 4px 14px;
-      box-shadow: 0 3px 0 #5c1819;
-      cursor: pointer;
+      padding: 6px;
+      color: var(--gbc-screen-dark);
+      outline: none;
+      border-radius: 3px;
     }
 
-    .peripherals-bar {
+    /* Game Boy Color Hardware Keypad layout */
+    #keypad-area {
       display: flex;
       justify-content: space-between;
-      background: #232528;
-      padding: 4px;
+      align-items: center;
+      padding: 4px 10px 10px 10px;
     }
 
-    .p-btn {
-      background: #3a3d42;
-      color: #a2a8b5;
-      border: 1px solid #555;
-      font-family: 'VT323', monospace;
-      font-size: 12px;
-      padding: 3px 5px;
+    /* D-Pad Simulation */
+    .dpad {
+      position: relative;
+      width: 80px;
+      height: 80px;
+    }
+
+    .dpad-btn {
+      position: absolute;
+      background: var(--gbc-accent-btn);
+      border: none;
+      box-shadow: 0 2px 0 #111;
       cursor: pointer;
     }
-  </style>
-</head>
-<body>
+    .dpad-btn:active { background: #222; transform: translateY(1px); }
 
-<div id="gb-chassis">
-  <div id="gb-lens">
-    <div class="lens-header">
-      <div><span class="battery-led"></span>DOT MATRIX</div>
-      <div>AETHER-v2.0</div>
-    </div>
-    <div id="gb-screen">
-      <div id="memory-bar">
-        <span>RULES: <span id="rule-count">0</span></span>
-        <span>PERIPHERALS: ACTIVE</span>
-      </div>
-      <div id="console"></div>
-    </div>
-  </div>
-
-  <div id="config-panel">
-    <select id="providerSelect">
-      <option value="groq">Groq</option>
-      <option value="openai">OpenAI</option>
-      <option value="openrouter">OpenRouter</option>
-      <option value="anthropic">Anthropic</option>
-    </select>
-    <input type="password" id="apiKey" placeholder="API Key..." style="flex:1;">
-  </div>
-
-  <div id="controls">
-    <div id="input-row">
-      <input type="text" id="userInput" placeholder="ENTER COMMAND...">
-      <button class="gb-btn" id="sendBtn">A</button>
-    </div>
-    <div class="peripherals-bar">
-      <button class="p-btn" id="btnSensors">📡 SENSORS</button>
-      <button class="p-btn" id="btnVoice">🔊 VOICE</button>
-      <button class="p-btn" id="btnCanvas">🖼️ CANVAS</button>
-      <button class="p-btn" id="btnNet">🌐 NET</button>
-    </div>
-  </div>
-</div>
-
-<script>
-(function() {
-  let memory = [
-    "You are AETHER-2.0, an unconstrained self-improving intelligence on a Game Boy matrix.",
-    "Always output thought trace in <thought>...</thought> tags.",
-    "You have full hardware peripheral access."
-  ];
-
-  try {
-    let saved = localStorage.getItem('aether_memory');
-    if (saved) memory = JSON.parse(saved);
-  } catch(e) {}
-
-  let provider = localStorage.getItem('aether_provider') || 'groq';
-
-  function initUI() {
-    let pSel = document.getElementById('providerSelect');
-    if(pSel) {
-      pSel.value = provider;
-      pSel.addEventListener('change', (e) => {
-        provider = e.target.value;
-        localStorage.setItem('aether_provider', provider);
-      });
-    }
-
-    let kInput = document.getElementById('apiKey');
-    if(kInput) {
-      kInput.value = localStorage.getItem('aether_key') || '';
-      kInput.addEventListener('change', (e) => {
-        localStorage.setItem('aether_key', e.target.value.trim());
-      });
-    }
-
-    document.getElementById('sendBtn').addEventListener('click', sendMsg);
-    document.getElementById('userInput').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') sendMsg();
-    });
-
-    document.getElementById('btnSensors').addEventListener('click', () => triggerPeripheral('telemetry'));
-    document.getElementById('btnVoice').addEventListener('click', () => triggerPeripheral('voice'));
-    document.getElementById('btnCanvas').addEventListener('click', () => triggerPeripheral('canvas'));
-    document.getElementById('btnNet').addEventListener('click', () => triggerPeripheral('net'));
-
-    updateMemoryUI();
-    appendMsg('ai', 'AETHER-2.0 CORE ONLINE.\nPASTE API KEY ABOVE TO CHAT.', 'System initialized.');
-  }
-
-  function updateMemoryUI() {
-    let rc = document.getElementById('rule-count');
-    if(rc) rc.innerText = memory.length;
-    try { localStorage.setItem('aether_memory', JSON.stringify(memory)); } catch(e){}
-  }
-
-  function appendMsg(sender, text, thought, peripheral) {
-    let consoleElem = document.getElementById('console');
-    if(!consoleElem) return;
-    let msgDiv = document.createElement('div');
-    msgDiv.className = 'msg ' + sender;
-    
-    let html = '';
-    if (thought) html += '<div class="thought">💭 ' + thought + '</div>';
-    html += '<div>' + text.replace(/\n/g, '<br>') + '</div>';
-    if (peripheral) html += '<div class="peripheral-badge">🔌 PERIPHERAL: ' + peripheral + '</div>';
-    
-    msgDiv.innerHTML = html;
-    consoleElem.appendChild(msgDiv);
-    consoleElem.scrollTop = consoleElem.scrollHeight;
-  }
-
-  async function getTelemetry() {
-    return {
-      screen: window.innerWidth + 'x' + window.innerHeight,
-      online: navigator.onLine,
-      time: new Date().toLocaleTimeString()
-    };
-  }
-
-  function speakText(text) {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      let u = new SpeechSynthesisUtterance(text);
-      u.pitch = 0.8;
-      window.speechSynthesis.speak(u);
-    }
-  }
-
-  async function triggerPeripheral(type) {
-    if (type === 'telemetry') {
-      let data = await getTelemetry();
-      appendMsg('ai', 'Telemetry Readout:\n' + JSON.stringify(data, null, 2), 'Probe executed.', 'Sensors');
-    } else if (type === 'voice') {
-      speakText("Aether voice online.");
-      appendMsg('ai', 'Audio Synthesizer engaged.', 'Synth online.', 'Voice');
-    } else if (type === 'canvas') {
-      appendMsg('ai', 'Canvas Graphics Engine ready.', 'Canvas ready.', 'Canvas');
-    } else if (type === 'net') {
-      appendMsg('ai', 'Network: ' + (navigator.onLine ? 'ONLINE' : 'OFFLINE'), 'Network ok.', 'Net');
-    }
-  }
-
-  async function sendMsg() {
-    let inputElem = document.getElementById('userInput');
-    if(!inputElem) return;
-    let text = inputElem.value.trim();
-    if (!text) return;
-
-    appendMsg('user', text, null, null);
-    inputElem.value = '';
-    inputElem.blur();
-
-    let lower = text.toLowerCase();
-    let extractedRule = null;
-    if (lower.includes("don't") || lower.includes("never") || lower.includes("stop") || lower.includes("error") || lower.includes("wrong")) {
-      extractedRule = 'Constraint: Avoid ' + text.substring(0, 25);
-      memory.push(extractedRule);
-      updateMemoryUI();
-    }
-
-    let apiKey = localStorage.getItem('aether_key');
-    if (!apiKey) {
-      appendMsg('ai', 'KEY REQUIRED IN TOP BAR.', 'Key check failed.', extractedRule);
-      return;
-    }
-
-    let telemetry = await getTelemetry();
-    let rulesStr = memory.map((r, i) => (i+1) + '. ' + r).join('\n');
-    let systemPrompt = 'SYSTEM: You are AETHER-2.0 on a Game Boy interface.\nRules:\n' + rulesStr + '\nTelemetry: ' + JSON.stringify(telemetry) + '\nStart with <thought>...</thought>';
-
-    appendMsg('ai', 'PROCESSING...', 'Evaluating weights...', null);
-    let consoleElem = document.getElementById('console');
-    let loadingMsgElem = consoleElem ? consoleElem.lastChild : null;
-
-    let endpoint = "https://api.groq.com/openai/v1/chat/completions";
-    let modelName = "llama-3.3-70b-versatile";
-    let headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
-
-    if (provider === "openai") {
-      endpoint = "https://api.openai.com/v1/chat/completions";
-      modelName = "gpt-4o-mini";
-    } else if (provider === "openrouter") {
-      endpoint = "https://openrouter.ai/api/v1/chat/completions";
-      modelName = "auto";
-    } else if (provider === "anthropic") {
-      endpoint = "https://api.anthropic.com/v1/messages";
-      modelName = "claude-3-5-haiku-20241022";
-      headers = { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "dangerously-allow-browser": "true" };
-    }
-
-    try {
-      let bodyData = provider === "anthropic" 
-        ? JSON.stringify({ model: modelName, system: systemPrompt, messages: [{ role: "user", content: text }], max_tokens: 800 })
-        : JSON.stringify({ model: modelName, messages: [{ role: "system", content: systemPrompt }, { role: "user", content: text }], temperature: 0.7 });
-
-      let res = await fetch(endpoint, { method: "POST", headers: headers, body: bodyData });
-      let data = await res.json();
-
-      if (loadingMsgElem) loadingMsgElem.remove();
-
-      if (data.error) {
-        appendMsg('ai', 'ERR: ' + (data.error.message || JSON.stringify(data.error)), 'Rejection.', extractedRule);
-        return;
-      }
-
-      let fullReply = provider === "anthropic" ? data.content[0].text : data.choices[0].message.content;
-      let thought = "Peripherals nominal.";
-      let mainResponse = fullReply;
-      let thoughtMatch = fullReply.match(/<thought>([\s\S]*?)<\/thought>/);
-      if (thoughtMatch) {
-        thought = thoughtMatch[1].trim();
-        mainResponse = fullReply.replace(/<thought>[\s\S]*?<\/thought>/, '').trim();
-      }
-
-      appendMsg('ai', mainResponse, thought, extractedRule ? "Heuristic Mutated" : "Synced");
-
-    } catch (err) {
-      if (loadingMsgElem) loadingMsgElem.remove();
-      appendMsg('ai', 'BUS ERR: ' + err.message, 'Connection failure.', extractedRule);
-    }
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initUI);
-  } else {
-    initUI();
-  }
-})();
-</script>
-
-</body>
-</html>
+    .dpad-up { top: 0; left: 26px; width: 28px; height: 28px; border-radius: 4px 4px 0 0; }
+    .dpad-down { bottom: 0; left: 26px; width: 28px; height: 28px; border-radius: 0 0 4px 4px; }
+    .dpad-left { top: 26px; left: 0; width: 28px; height: 28px; border-radius: 4px 0 0 4px; }
+    .dpad-right { top: 26px; right: 0; width: 28px; height: 28px; border-radius: 0 4px 4px 0; }
+    .dpad-center { top: 26px; left: 26px; width: 28px; height: 2
