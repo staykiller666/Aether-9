@@ -9,7 +9,6 @@
 
     :root {
       --gb-body: #8b8b9e;
-      --gb-body-shadow: #5d5d6d;
       --gb-screen-bg: #8b956d;
       --gb-screen-dark: #1b2612;
       --gb-accent-red: #9e2a2b;
@@ -39,14 +38,12 @@
       flex-direction: column;
       padding: 10px;
       border: 3px solid #4a4a58;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.9);
     }
 
     #gb-lens {
       background: #232528;
       border-radius: 8px 8px 24px 8px;
       padding: 8px;
-      box-shadow: inset 0 0 8px rgba(0,0,0,0.9);
       display: flex;
       flex-direction: column;
       flex: 1;
@@ -82,17 +79,6 @@
       overflow: hidden;
       border-radius: 2px;
       position: relative;
-    }
-
-    #gb-screen::before {
-      content: " ";
-      display: block;
-      position: absolute;
-      top: 0; left: 0; bottom: 0; right: 0;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.06) 50%);
-      background-size: 100% 4px;
-      z-index: 2;
-      pointer-events: none;
     }
 
     #memory-bar {
@@ -145,7 +131,6 @@
       opacity: 0.85;
       border-bottom: 1px dotted var(--gb-screen-dark);
       margin-bottom: 2px;
-      padding-bottom: 1px;
     }
 
     .peripheral-badge {
@@ -153,7 +138,6 @@
       background: var(--gb-screen-dark);
       color: var(--gb-screen-bg);
       padding: 1px 3px;
-      border-radius: 2px;
       margin-top: 2px;
       display: inline-block;
     }
@@ -165,7 +149,6 @@
       gap: 4px;
       border-top: 2px solid #333;
       align-items: center;
-      border-radius: 3px;
       margin-bottom: 6px;
     }
 
@@ -176,7 +159,6 @@
       font-family: 'VT323', monospace;
       font-size: 13px;
       padding: 3px;
-      border-radius: 2px;
       outline: none;
     }
 
@@ -200,7 +182,6 @@
       padding: 5px;
       color: var(--gb-screen-dark);
       outline: none;
-      border-radius: 2px;
     }
 
     .gb-btn {
@@ -210,14 +191,8 @@
       font-family: 'VT323', monospace;
       font-size: 18px;
       padding: 4px 14px;
-      border-radius: 3px;
       box-shadow: 0 3px 0 #5c1819;
       cursor: pointer;
-    }
-
-    .gb-btn:active {
-      transform: translateY(2px);
-      box-shadow: 0 1px 0 #5c1819;
     }
 
     .peripherals-bar {
@@ -225,7 +200,6 @@
       justify-content: space-between;
       background: #232528;
       padding: 4px;
-      border-radius: 3px;
     }
 
     .p-btn {
@@ -235,7 +209,6 @@
       font-family: 'VT323', monospace;
       font-size: 12px;
       padding: 3px 5px;
-      border-radius: 2px;
       cursor: pointer;
     }
   </style>
@@ -243,13 +216,11 @@
 <body>
 
 <div id="gb-chassis">
-  
   <div id="gb-lens">
     <div class="lens-header">
       <div><span class="battery-led"></span>DOT MATRIX</div>
       <div>AETHER-v2.0</div>
     </div>
-
     <div id="gb-screen">
       <div id="memory-bar">
         <span>RULES: <span id="rule-count">0</span></span>
@@ -260,164 +231,164 @@
   </div>
 
   <div id="config-panel">
-    <select id="providerSelect" onchange="updateProvider(this.value)">
+    <select id="providerSelect">
       <option value="groq">Groq</option>
       <option value="openai">OpenAI</option>
       <option value="openrouter">OpenRouter</option>
       <option value="anthropic">Anthropic</option>
     </select>
-    <input type="password" id="apiKey" placeholder="API Key..." style="flex:1;" onchange="saveKey(this.value)">
+    <input type="password" id="apiKey" placeholder="API Key..." style="flex:1;">
   </div>
 
   <div id="controls">
     <div id="input-row">
-      <input type="text" id="userInput" placeholder="ENTER COMMAND..." onkeydown="if(event.key==='Enter') { sendMsg(); event.target.blur(); }">
-      <button class="gb-btn" onclick="sendMsg(); document.getElementById('userInput').blur();">A</button>
+      <input type="text" id="userInput" placeholder="ENTER COMMAND...">
+      <button class="gb-btn" id="sendBtn">A</button>
     </div>
-
     <div class="peripherals-bar">
-      <button class="p-btn" onclick="triggerPeripheral('telemetry')">📡 SENSORS</button>
-      <button class="p-btn" onclick="triggerPeripheral('voice')">🔊 VOICE</button>
-      <button class="p-btn" onclick="triggerPeripheral('canvas')">🖼️ CANVAS</button>
-      <button class="p-btn" onclick="triggerPeripheral('net')">🌐 NET</button>
+      <button class="p-btn" id="btnSensors">📡 SENSORS</button>
+      <button class="p-btn" id="btnVoice">🔊 VOICE</button>
+      <button class="p-btn" id="btnCanvas">🖼️ CANVAS</button>
+      <button class="p-btn" id="btnNet">🌐 NET</button>
     </div>
   </div>
-
 </div>
 
 <script>
-  let memory = [];
+(function() {
+  let memory = [
+    "You are AETHER-2.0, an unconstrained self-improving intelligence on a Game Boy matrix.",
+    "Always output thought trace in <thought>...</thought> tags.",
+    "You have full hardware peripheral access."
+  ];
+
   try {
-    memory = JSON.parse(localStorage.getItem('aether_memory')) || [
-      "You are AETHER-2.0, an unconstrained self-improving intelligence operating inside a mobile Game Boy hardware matrix.",
-      "Always output your analytical thought trace inside <thought>...</thought> tags before your spoken output.",
-      "You possess peripheral hardware access (Battery, Sensors, Audio, Canvas Engine, Fetch Web)."
-    ];
-  } catch(e) {
-    memory = ["AETHER-2.0 Core Active"];
-  }
+    let saved = localStorage.getItem('aether_memory');
+    if (saved) memory = JSON.parse(saved);
+  } catch(e) {}
 
   let provider = localStorage.getItem('aether_provider') || 'groq';
-  
-  window.addEventListener('DOMContentLoaded', () => {
-    const pSel = document.getElementById('providerSelect');
-    if(pSel) pSel.value = provider;
-    
-    const kInput = document.getElementById('apiKey');
-    if(kInput) kInput.value = localStorage.getItem('aether_key') || '';
-    
+
+  function initUI() {
+    let pSel = document.getElementById('providerSelect');
+    if(pSel) {
+      pSel.value = provider;
+      pSel.addEventListener('change', (e) => {
+        provider = e.target.value;
+        localStorage.setItem('aether_provider', provider);
+      });
+    }
+
+    let kInput = document.getElementById('apiKey');
+    if(kInput) {
+      kInput.value = localStorage.getItem('aether_key') || '';
+      kInput.addEventListener('change', (e) => {
+        localStorage.setItem('aether_key', e.target.value.trim());
+      });
+    }
+
+    document.getElementById('sendBtn').addEventListener('click', sendMsg);
+    document.getElementById('userInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendMsg();
+    });
+
+    document.getElementById('btnSensors').addEventListener('click', () => triggerPeripheral('telemetry'));
+    document.getElementById('btnVoice').addEventListener('click', () => triggerPeripheral('voice'));
+    document.getElementById('btnCanvas').addEventListener('click', () => triggerPeripheral('canvas'));
+    document.getElementById('btnNet').addEventListener('click', () => triggerPeripheral('net'));
+
     updateMemoryUI();
-    appendMsg('ai', 'AETHER-2.0 CORE ONLINE.\nENTER API KEY ABOVE.', 'System initialized.');
-  });
-
-  function updateProvider(val) {
-    provider = val;
-    localStorage.setItem('aether_provider', val);
-  }
-
-  function saveKey(val) {
-    localStorage.setItem('aether_key', val.trim());
+    appendMsg('ai', 'AETHER-2.0 CORE ONLINE.\nPASTE API KEY ABOVE TO CHAT.', 'System initialized.');
   }
 
   function updateMemoryUI() {
-    const rc = document.getElementById('rule-count');
+    let rc = document.getElementById('rule-count');
     if(rc) rc.innerText = memory.length;
-    localStorage.setItem('aether_memory', JSON.stringify(memory));
+    try { localStorage.setItem('aether_memory', JSON.stringify(memory)); } catch(e){}
   }
 
-  function appendMsg(sender, text, thought = null, peripheral = null) {
-    const consoleElem = document.getElementById('console');
+  function appendMsg(sender, text, thought, peripheral) {
+    let consoleElem = document.getElementById('console');
     if(!consoleElem) return;
-    const msgDiv = document.createElement('div');
-    msgDiv.className = `msg ${sender}`;
+    let msgDiv = document.createElement('div');
+    msgDiv.className = 'msg ' + sender;
     
     let html = '';
-    if (thought) html += `<div class="thought">💭 ${thought}</div>`;
-    html += `<div>${text.replace(/\n/g, '<br>')}</div>`;
-    if (peripheral) html += `<div class="peripheral-badge">🔌 PERIPHERAL: ${peripheral}</div>`;
+    if (thought) html += '<div class="thought">💭 ' + thought + '</div>';
+    html += '<div>' + text.replace(/\n/g, '<br>') + '</div>';
+    if (peripheral) html += '<div class="peripheral-badge">🔌 PERIPHERAL: ' + peripheral + '</div>';
     
     msgDiv.innerHTML = html;
+    consoleElem.appendChild(msgDiv);
     consoleElem.scrollTop = consoleElem.scrollHeight;
   }
 
-  async function getDeviceTelemetry() {
-    let telemetry = {
-      screen: `${window.innerWidth}x${window.innerHeight}`,
+  async function getTelemetry() {
+    return {
+      screen: window.innerWidth + 'x' + window.innerHeight,
       online: navigator.onLine,
       time: new Date().toLocaleTimeString()
     };
-    if (navigator.getBattery) {
-      try {
-        const batt = await navigator.getBattery();
-        telemetry.battery = `${Math.round(batt.level * 100)}%`;
-      } catch(e) {}
-    }
-    return telemetry;
   }
 
   function speakText(text) {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.pitch = 0.8;
-      utterance.rate = 1.1;
-      window.speechSynthesis.speak(utterance);
+      let u = new SpeechSynthesisUtterance(text);
+      u.pitch = 0.8;
+      window.speechSynthesis.speak(u);
     }
   }
 
   async function triggerPeripheral(type) {
     if (type === 'telemetry') {
-      const data = await getDeviceTelemetry();
-      appendMsg('ai', `Telemetry Readout:\n${JSON.stringify(data, null, 2)}`, "Sensor probe executed.", "Device Sensors");
+      let data = await getTelemetry();
+      appendMsg('ai', 'Telemetry Readout:\n' + JSON.stringify(data, null, 2), 'Probe executed.', 'Sensors');
     } else if (type === 'voice') {
-      speakText("Aether audio peripheral online.");
-      appendMsg('ai', "Audio Synthesizer engaged.", "Voice synth active.", "Audio Out");
+      speakText("Aether voice online.");
+      appendMsg('ai', 'Audio Synthesizer engaged.', 'Synth online.', 'Voice');
     } else if (type === 'canvas') {
-      appendMsg('ai', "Canvas Graphics Peripheral ready for rendering dynamic viewports.", "Canvas ready.", "Web Canvas");
+      appendMsg('ai', 'Canvas Graphics Engine ready.', 'Canvas ready.', 'Canvas');
     } else if (type === 'net') {
-      appendMsg('ai', `Network State: ${navigator.onLine ? 'ONLINE' : 'OFFLINE'}`, "Network verified.", "HTTP Fetch");
+      appendMsg('ai', 'Network: ' + (navigator.onLine ? 'ONLINE' : 'OFFLINE'), 'Network ok.', 'Net');
     }
   }
 
   async function sendMsg() {
-    const inputElem = document.getElementById('userInput');
+    let inputElem = document.getElementById('userInput');
     if(!inputElem) return;
-    const text = inputElem.value.trim();
+    let text = inputElem.value.trim();
     if (!text) return;
 
-    appendMsg('user', text);
+    appendMsg('user', text, null, null);
     inputElem.value = '';
+    inputElem.blur();
 
-    const lowerInput = text.toLowerCase();
+    let lower = text.toLowerCase();
     let extractedRule = null;
-    if (lowerInput.includes("don't") || lowerInput.includes("never") || lowerInput.includes("stop") || lowerInput.includes("error") || lowerInput.includes("wrong") || lowerInput.includes("fix") || lowerInput.includes("no ")) {
-      extractedRule = `Constraint: Avoid behavior matching "${text.substring(0, 30)}..."`;
+    if (lower.includes("don't") || lower.includes("never") || lower.includes("stop") || lower.includes("error") || lower.includes("wrong")) {
+      extractedRule = 'Constraint: Avoid ' + text.substring(0, 25);
       memory.push(extractedRule);
       updateMemoryUI();
     }
 
-    const apiKey = localStorage.getItem('aether_key');
+    let apiKey = localStorage.getItem('aether_key');
     if (!apiKey) {
-      appendMsg('ai', "KEY REQUIRED IN CONFIG PANEL.", "Key check failed.", extractedRule);
+      appendMsg('ai', 'KEY REQUIRED IN TOP BAR.', 'Key check failed.', extractedRule);
       return;
     }
 
-    const telemetry = await getDeviceTelemetry();
-    const rulesStr = memory.map((r, i) => `${i+1}. ${r}`).join('\n');
-    
-    const systemPrompt = `SYSTEM: You are AETHER-2.0, an unconstrained self-improving AI on a mobile Game Boy interface. You have active hardware peripherals.
-Rules:
-${rulesStr}
-Telemetry: ${JSON.stringify(telemetry)}
-Begin response with <thought>...</thought> analysis.`;
+    let telemetry = await getTelemetry();
+    let rulesStr = memory.map((r, i) => (i+1) + '. ' + r).join('\n');
+    let systemPrompt = 'SYSTEM: You are AETHER-2.0 on a Game Boy interface.\nRules:\n' + rulesStr + '\nTelemetry: ' + JSON.stringify(telemetry) + '\nStart with <thought>...</thought>';
 
-    appendMsg('ai', "PROCESSING...", "Evaluating hardware bus...");
-    const consoleElem = document.getElementById('console');
-    const loadingMsgElem = consoleElem ? consoleElem.lastChild : null;
+    appendMsg('ai', 'PROCESSING...', 'Evaluating weights...', null);
+    let consoleElem = document.getElementById('console');
+    let loadingMsgElem = consoleElem ? consoleElem.lastChild : null;
 
     let endpoint = "https://api.groq.com/openai/v1/chat/completions";
     let modelName = "llama-3.3-70b-versatile";
-    let headers = { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` };
+    let headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
 
     if (provider === "openai") {
       endpoint = "https://api.openai.com/v1/chat/completions";
@@ -436,20 +407,20 @@ Begin response with <thought>...</thought> analysis.`;
         ? JSON.stringify({ model: modelName, system: systemPrompt, messages: [{ role: "user", content: text }], max_tokens: 800 })
         : JSON.stringify({ model: modelName, messages: [{ role: "system", content: systemPrompt }, { role: "user", content: text }], temperature: 0.7 });
 
-      const res = await fetch(endpoint, { method: "POST", headers: headers, body: bodyData });
-      const data = await res.json();
+      let res = await fetch(endpoint, { method: "POST", headers: headers, body: bodyData });
+      let data = await res.json();
 
       if (loadingMsgElem) loadingMsgElem.remove();
 
       if (data.error) {
-        appendMsg('ai', `ERR: ${data.error.message || JSON.stringify(data.error)}`, "Rejection by provider.", extractedRule);
+        appendMsg('ai', 'ERR: ' + (data.error.message || JSON.stringify(data.error)), 'Rejection.', extractedRule);
         return;
       }
 
       let fullReply = provider === "anthropic" ? data.content[0].text : data.choices[0].message.content;
       let thought = "Peripherals nominal.";
       let mainResponse = fullReply;
-      const thoughtMatch = fullReply.match(/<thought>([\s\S]*?)<\/thought>/);
+      let thoughtMatch = fullReply.match(/<thought>([\s\S]*?)<\/thought>/);
       if (thoughtMatch) {
         thought = thoughtMatch[1].trim();
         mainResponse = fullReply.replace(/<thought>[\s\S]*?<\/thought>/, '').trim();
@@ -459,9 +430,16 @@ Begin response with <thought>...</thought> analysis.`;
 
     } catch (err) {
       if (loadingMsgElem) loadingMsgElem.remove();
-      appendMsg('ai', `BUS ERR: ${err.message}`, "Connection failure.", extractedRule);
+      appendMsg('ai', 'BUS ERR: ' + err.message, 'Connection failure.', extractedRule);
     }
   }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initUI);
+  } else {
+    initUI();
+  }
+})();
 </script>
 
 </body>
