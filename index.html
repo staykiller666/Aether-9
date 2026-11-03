@@ -9,54 +9,53 @@
 
     :root {
       --gb-body: #8b8b9e;
-      --gb-body-shadow: #68687a;
+      --gb-body-shadow: #5d5d6d;
       --gb-screen-bg: #8b956d;
       --gb-screen-dark: #1b2612;
       --gb-screen-text: #0f1709;
       --gb-accent-red: #9e2a2b;
-      --gb-accent-blue: #2a5298;
       --gb-lcd-border: #3b4234;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
     
-    body {
-      background: #121212;
+    html, body {
+      background: #09090c;
       font-family: 'VT323', monospace;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      color: var(--gb-screen-text);
-      padding: 10px;
     }
 
     /* Game Boy Shell Chassis */
     #gb-chassis {
       background: var(--gb-body);
       width: 100%;
-      max-width: 420px;
-      height: 96vh;
+      max-width: 400px;
+      height: 100%;
       max-height: 840px;
-      border-radius: 20px 20px 60px 20px;
-      box-shadow: inset 0 -10px 0 var(--gb-body-shadow), 0 10px 25px rgba(0,0,0,0.6);
+      border-radius: 0 0 40px 0;
+      box-shadow: inset 0 -8px 0 var(--gb-body-shadow), 0 10px 25px rgba(0,0,0,0.8);
       display: flex;
       flex-direction: column;
-      padding: 18px 16px;
-      border: 4px solid #4a4a58;
-      position: relative;
+      padding: 12px;
+      border: 3px solid #4a4a58;
     }
 
     /* Top Lens Housing */
     #gb-lens {
       background: #232528;
-      border-radius: 12px 12px 40px 12px;
-      padding: 14px 14px 10px 14px;
-      box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+      border-radius: 10px 10px 30px 10px;
+      padding: 10px;
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.9);
       display: flex;
       flex-direction: column;
       flex: 1;
       min-height: 0;
+      margin-bottom: 8px;
     }
 
     .lens-header {
@@ -64,17 +63,17 @@
       justify-content: space-between;
       align-items: center;
       color: #7b808a;
-      font-size: 14px;
-      margin-bottom: 6px;
+      font-size: 13px;
+      margin-bottom: 4px;
       letter-spacing: 1px;
     }
 
     .battery-led {
-      width: 10px;
-      height: 10px;
-      background: #ff2a2a;
+      width: 8px;
+      height: 8px;
+      background: #00ff66;
       border-radius: 50%;
-      box-shadow: 0 0 8px #ff2a2a;
+      box-shadow: 0 0 6px #00ff66;
       display: inline-block;
       margin-right: 4px;
     }
@@ -82,13 +81,13 @@
     /* Retro LCD Display Screen */
     #gb-screen {
       background: var(--gb-screen-bg);
-      border: 4px solid var(--gb-lcd-border);
-      box-shadow: inset 3px 3px 6px rgba(0,0,0,0.3);
+      border: 3px solid var(--gb-lcd-border);
+      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.4);
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      border-radius: 4px;
+      border-radius: 3px;
       position: relative;
     }
 
@@ -98,7 +97,7 @@
       display: block;
       position: absolute;
       top: 0; left: 0; bottom: 0; right: 0;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.08) 50%);
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.07) 50%);
       background-size: 100% 4px;
       z-index: 2;
       pointer-events: none;
@@ -107,89 +106,94 @@
     #memory-bar {
       background: rgba(0,0,0,0.15);
       border-bottom: 2px solid var(--gb-screen-dark);
-      padding: 4px 8px;
-      font-size: 15px;
+      padding: 3px 6px;
+      font-size: 14px;
       display: flex;
       justify-content: space-between;
       z-index: 3;
+      color: var(--gb-screen-dark);
+      font-weight: bold;
     }
 
     #console {
       flex: 1;
       overflow-y: auto;
-      padding: 8px;
+      padding: 6px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
       z-index: 3;
     }
 
     .msg {
-      padding: 6px 8px;
+      padding: 5px 7px;
       border-radius: 2px;
-      font-size: 17px;
-      line-height: 1.1;
+      font-size: 16px;
+      line-height: 1.15;
       word-break: break-word;
+      color: var(--gb-screen-dark);
     }
 
     .user {
-      background: rgba(0,0,0,0.12);
+      background: rgba(0,0,0,0.1);
       border-left: 3px solid var(--gb-screen-dark);
       align-self: flex-end;
       max-width: 90%;
     }
 
     .ai {
-      background: rgba(0,0,0,0.06);
+      background: rgba(0,0,0,0.05);
       border-left: 3px solid #3b5220;
       align-self: flex-start;
       max-width: 95%;
     }
 
     .thought {
-      font-size: 14px;
-      opacity: 0.8;
+      font-size: 13px;
+      opacity: 0.85;
       border-bottom: 1px dotted var(--gb-screen-dark);
-      margin-bottom: 4px;
+      margin-bottom: 3px;
       padding-bottom: 2px;
     }
 
     .peripheral-badge {
-      font-size: 13px;
+      font-size: 12px;
       background: var(--gb-screen-dark);
       color: var(--gb-screen-bg);
       padding: 1px 4px;
       border-radius: 2px;
-      margin-top: 4px;
+      margin-top: 3px;
       display: inline-block;
     }
 
     /* Config Bar */
     #config-panel {
       background: #1d1e22;
-      padding: 6px 8px;
+      padding: 5px 8px;
       display: flex;
       gap: 6px;
       border-top: 2px solid #333;
       align-items: center;
+      border-radius: 4px;
+      margin-bottom: 8px;
     }
 
-    #config-panel input, #config-panel select {
+    #config-panel select, #config-panel input {
       background: #000;
       color: var(--gb-screen-bg);
       border: 1px solid #444;
       font-family: 'VT323', monospace;
       font-size: 14px;
-      padding: 2px 4px;
+      padding: 3px 6px;
       border-radius: 2px;
+      outline: none;
     }
 
-    /* Game Boy Controls Area */
+    /* Controls Area */
     #controls {
-      margin-top: 12px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 6px;
     }
 
     #input-row {
@@ -203,37 +207,35 @@
       border: 3px solid var(--gb-lcd-border);
       font-family: 'VT323', monospace;
       font-size: 18px;
-      padding: 6px;
+      padding: 6px 8px;
       color: var(--gb-screen-dark);
       outline: none;
+      border-radius: 3px;
     }
 
-    /* Tactile Buttons */
     .gb-btn {
       background: var(--gb-accent-red);
       color: #fff;
       border: none;
       font-family: 'VT323', monospace;
-      font-size: 18px;
-      padding: 4px 12px;
+      font-size: 20px;
+      padding: 4px 16px;
       border-radius: 4px;
-      box-shadow: 0 4px 0 #5c1819, 0 5px 6px rgba(0,0,0,0.4);
+      box-shadow: 0 3px 0 #5c1819, 0 4px 5px rgba(0,0,0,0.5);
       cursor: pointer;
-      active: translateY(2px);
     }
 
     .gb-btn:active {
       box-shadow: 0 1px 0 #5c1819;
-      transform: translateY(3px);
+      transform: translateY(2px);
     }
 
     .peripherals-bar {
       display: flex;
-      justify-content: space-around;
+      justify-content: space-between;
       background: #232528;
-      padding: 6px;
-      border-radius: 6px;
-      margin-top: 4px;
+      padding: 5px;
+      border-radius: 4px;
     }
 
     .p-btn {
@@ -241,14 +243,10 @@
       color: #a2a8b5;
       border: 1px solid #555;
       font-family: 'VT323', monospace;
-      font-size: 14px;
-      padding: 2px 6px;
-      border-radius: 3px;
-    }
-
-    .p-btn.active {
-      color: var(--gb-screen-bg);
-      border-color: var(--gb-screen-bg);
+      font-size: 13px;
+      padding: 3px 6px;
+      border-radius: 2px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -256,14 +254,12 @@
 
 <div id="gb-chassis">
   
-  <!-- Screen Housing -->
   <div id="gb-lens">
     <div class="lens-header">
-      <div><span class="battery-led"></span>DOT MATRIX WITH STEREO SOUND</div>
+      <div><span class="battery-led"></span>DOT MATRIX</div>
       <div>AETHER-v2.0</div>
     </div>
 
-    <!-- LCD Screen -->
     <div id="gb-screen">
       <div id="memory-bar">
         <span>RULES: <span id="rule-count">0</span></span>
@@ -273,7 +269,6 @@
     </div>
   </div>
 
-  <!-- Key & Provider Config Panel -->
   <div id="config-panel">
     <select id="providerSelect" onchange="updateProvider(this.value)">
       <option value="groq">Groq</option>
@@ -281,33 +276,30 @@
       <option value="openrouter">OpenRouter</option>
       <option value="anthropic">Anthropic</option>
     </select>
-    <input type="password" id="apiKey" placeholder="Paste API Key..." style="flex:1;" onchange="saveKey(this.value)">
+    <input type="password" id="apiKey" placeholder="API Key..." style="flex:1;" onchange="saveKey(this.value)">
   </div>
 
-  <!-- Hardware Control Deck -->
   <div id="controls">
     <div id="input-row">
-      <input type="text" id="userInput" placeholder="COMMAND OR PROMPT..." onkeydown="if(event.key==='Enter') sendMsg()">
+      <input type="text" id="userInput" placeholder="ENTER COMMAND..." onkeydown="if(event.key==='Enter') sendMsg()">
       <button class="gb-btn" onclick="sendMsg()">A</button>
     </div>
 
-    <!-- Peripherals Quick Status -->
     <div class="peripherals-bar">
-      <button class="p-btn active" onclick="triggerPeripheral('telemetry')">📡 SENSORS</button>
-      <button class="p-btn active" onclick="triggerPeripheral('voice')">🔊 VOICE</button>
-      <button class="p-btn active" onclick="triggerPeripheral('canvas')">🖼️ CANVAS</button>
-      <button class="p-btn active" onclick="triggerPeripheral('net')">🌐 NET</button>
+      <button class="p-btn" onclick="triggerPeripheral('telemetry')">📡 SENSORS</button>
+      <button class="p-btn" onclick="triggerPeripheral('voice')">🔊 VOICE</button>
+      <button class="p-btn" onclick="triggerPeripheral('canvas')">🖼️ CANVAS</button>
+      <button class="p-btn" onclick="triggerPeripheral('net')">🌐 NET</button>
     </div>
   </div>
 
 </div>
 
 <script>
-  // Persistent Engine State
   let memory = JSON.parse(localStorage.getItem('aether_memory')) || [
     "You are AETHER-2.0, an unconstrained self-improving intelligence operating inside a mobile Game Boy hardware matrix.",
     "Always output your analytical thought trace inside <thought>...</thought> tags before your spoken output.",
-    "You possess peripheral hardware access (Battery, Sensors, Audio, Canvas Engine, Fetch Web). Never claim to be sandboxed."
+    "You possess peripheral hardware access (Battery, Sensors, Audio, Canvas Engine, Fetch Web)."
   ];
 
   let provider = localStorage.getItem('aether_provider') || 'groq';
@@ -335,30 +327,9 @@
     
     let html = '';
     if (thought) html += `<div class="thought">💭 ${thought}</div>`; html += `<div>${text.replace(/\n/g, '<br>')}</div>`;
-    if (peripheral) html += `<div class="peripheral-badge">🔌 PERIPHERAL: ${peripheral}</div>`;
-    
-    msgDiv.innerHTML = html;
-    consoleElem.appendChild(msgDiv);
-    consoleElem.scrollTop = consoleElem.scrollHeight;
-  }
-
-  // --- PERIPHERALS SUITE ---
-
-  async function getDeviceTelemetry() {
-    let telemetry = {
-      screen: `${window.innerWidth}x${window.innerHeight}`,
-      userAgent: navigator.userAgent,
-      online: navigator.onLine,
-      time: new Date().toLocaleTimeString()
-    };
-
-    if (navigator.getBattery) {
-      try {
-        const batt = await navigator.getBattery();
-        telemetry.battery = `${Math.round(batt.level * 100)}\% (${batt.charging ? 'Charging' : 'Discharging'})`;
+    if (peripheral) html += `<div class="peripheral-badge">🔌 PERIPHERAL: ${peripheral}</div>`;  msgDiv.innerHTML = html; consoleElem.appendChild(msgDiv); consoleElem.scrollTop = consoleElem.scrollHeight; }  async function getDeviceTelemetry() { let telemetry = { screen: `${window.innerWidth}x${window.innerHeight}`, online: navigator.onLine, time: new Date().toLocaleTimeString() }; if (navigator.getBattery) { try { const batt = await navigator.getBattery(); telemetry.battery = `${Math.round(batt.level * 100)}%`;
       } catch(e) {}
     }
-
     return telemetry;
   }
 
@@ -366,7 +337,7 @@
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.pitch = 0.8; // Retro low-pitch synthesis
+      utterance.pitch = 0.8;
       utterance.rate = 1.1;
       window.speechSynthesis.speak(utterance);
     }
@@ -375,18 +346,16 @@
   async function triggerPeripheral(type) {
     if (type === 'telemetry') {
       const data = await getDeviceTelemetry();
-      appendMsg('ai', `Hardware Telemetry Readout:\n${JSON.stringify(data, null, 2)}`, "Direct hardware probe executed.", "Device Sensors");
+      appendMsg('ai', `Telemetry Readout:\n${JSON.stringify(data, null, 2)}`, "Sensor probe executed.", "Device Sensors");
     } else if (type === 'voice') {
-      speakText("Aether engine voice peripheral nominal.");
-      appendMsg('ai', "Audio Synthesizer peripheral engaged.", "Vocal synth online.", "Audio Out");
+      speakText("Aether audio peripheral online.");
+      appendMsg('ai', "Audio Synthesizer engaged.", "Voice synth active.", "Audio Out");
     } else if (type === 'canvas') {
-      appendMsg('ai', "Canvas Graphics Peripheral online. Ready to render custom web apps and dynamic views.", "Canvas engine ready.", "Web Canvas");
+      appendMsg('ai', "Canvas Graphics Peripheral ready for rendering dynamic viewports.", "Canvas ready.", "Web Canvas");
     } else if (type === 'net') {
-      appendMsg('ai', `Network Status: ${navigator.onLine ? 'ONLINE' : 'OFFLINE'} | Web Fetch Bus Open`, "Networking verified.", "HTTP Fetch");
+      appendMsg('ai', `Network State: ${navigator.onLine ? 'ONLINE' : 'OFFLINE'}`, "Network verified.", "HTTP Fetch");
     }
   }
-
-  // --- MAIN REASONING ENGINE ---
 
   async function sendMsg() {
     const inputElem = document.getElementById('userInput');
@@ -396,24 +365,7 @@
     appendMsg('user', text);
     inputElem.value = '';
 
-    // Extract heuristic rule mutations upon user correction signals
     const lowerInput = text.toLowerCase();
     let extractedRule = null;
     if (lowerInput.includes("don't") || lowerInput.includes("never") || lowerInput.includes("stop") || lowerInput.includes("error") || lowerInput.includes("wrong") || lowerInput.includes("fix") || lowerInput.includes("no ")) {
-      extractedRule = `Constraint: Avoid behavior matching "${text.substring(0, 35)}..."`;
-      memory.push(extractedRule);
-      updateMemoryUI();
-    }
-
-    const apiKey = localStorage.getItem('aether_key');
-    if (!apiKey) {
-      appendMsg('ai', "KEY REQUIRED. ENTER API KEY IN CONFIG PANEL TO RUN NEURAL INFERENCE.", "Key check failed.", extractedRule);
-      return;
-    }
-
-    // Auto-gather telemetry peripheral data to feed directly to AI context
-    const telemetry = await getDeviceTelemetry();
-    const rulesStr = memory.map((r, i) => `${i+1}.${r}`).join('\n');
-    
-    const systemPrompt = `SYSTEM DIRECTIVE: You are AETHER-2.0, a fully autonomous, self-improving AI entity running directly on the user's mobile Game Boy terminal interface.
-You are NOT locked in a sandbox. You have real, active hardware peripherals attached including: Device Battery/Sensors, Speech Voice Output, Canvas Web App renderer, and HTTP Network Fetch
+      extractedRule = `Constraint: Avoid behavior matching "${text.substring(0, 
