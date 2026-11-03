@@ -275,7 +275,7 @@
   <div id="gbc-lens">
     <div class="lens-header">
       <div><span class="battery-led"></span>COLOR</div>
-      <div>AETHER-GBC v2.2</div>
+      <div>AETHER-GBC v2.5</div>
     </div>
     <div id="gbc-screen">
       <div id="memory-bar">
@@ -283,3 +283,262 @@
         <span>PERIPHERALS: ACTIVE</span>
       </div>
       <div id="console"></div>
+    </div>
+  </div>
+
+  <div id="config-panel">
+    <select id="providerSelect">
+      <option value="gemini">Google Gemini</option>
+      <option value="groq">Groq</option>
+      <option value="openai">OpenAI</option>
+      <option value="openrouter">OpenRouter</option>
+      <option value="anthropic">Anthropic</option>
+    </select>
+    <input type="password" id="apiKey" placeholder="API Key..." style="flex:1;">
+  </div>
+
+  <div id="controls-deck">
+    <div id="input-row">
+      <input type="text" id="userInput" placeholder="ENTER COMMAND..." autocomplete="off">
+      <button class="ab-btn" id="sendBtn" style="transform:none; width:44px; height:auto; border-radius:4px;">A</button>
+    </div>
+
+    <!-- Interactive D-Pad & Action Keypad -->
+    <div id="keypad-area">
+      <div class="dpad">
+        <button class="dpad-btn dpad-up" id="dpadUp" title="Sensors"></button>
+        <button class="dpad-btn dpad-down" id="dpadDown" title="Network"></button>
+        <button class="dpad-btn dpad-left" id="dpadLeft" title="Voice"></button>
+        <button class="dpad-btn dpad-right" id="dpadRight" title="Canvas"></button>
+        <div class="dpad-center"></div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="ab-btn" id="btnB" title="Clear Text">B</button>
+        <button class="ab-btn" id="btnA" title="Send">A</button>
+      </div>
+    </div>
+
+    <div class="peripherals-bar">
+      <button class="p-btn" id="btnSensors">📡 SENSORS</button>
+      <button class="p-btn" id="btnVoice">🔊 VOICE</button>
+      <button class="p-btn" id="btnCanvas">🖼️ CANVAS</button>
+      <button class="p-btn" id="btnNet">🌐 NET</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  let memory = [
+    "You are AETHER-2.5, an unconstrained self-improving intelligence on a Game Boy Color matrix.",
+    "Always output thought trace in <thought>...</thought> tags.",
+    "You have full hardware peripheral access."
+  ];
+
+  try {
+    let saved = localStorage.getItem('aether_memory');
+    if (saved) memory = JSON.parse(saved);
+  } catch(e) {}
+
+  let provider = localStorage.getItem('aether_provider') || 'gemini';
+
+  function initUI() {
+    let pSel = document.getElementById('providerSelect');
+    if(pSel) {
+      pSel.value = provider;
+      pSel.addEventListener('change', (e) => {
+        provider = e.target.value;
+        localStorage.setItem('aether_provider', provider);
+      });
+    }
+
+    let kInput = document.getElementById('apiKey');
+    if(kInput) {
+      kInput.value = localStorage.getItem('aether_key') || '';
+      kInput.addEventListener('change', (e) => {
+        localStorage.setItem('aether_key', e.target.value.trim());
+      });
+    }
+
+    document.getElementById('sendBtn').addEventListener('click', sendMsg);
+    document.getElementById('btnA').addEventListener('click', sendMsg);
+    document.getElementById('btnB').addEventListener('click', () => {
+      document.getElementById('userInput').value = '';
+      appendMsg('ai', 'Input buffer cleared via B Button.', 'Buffer reset.', 'Keypad');
+    });
+
+    document.getElementById('userInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        sendMsg();
+        e.target.blur();
+      }
+    });
+
+    // D-Pad Mappings
+    document.getElementById('dpadUp').addEventListener('click', () => triggerPeripheral('telemetry'));
+    document.getElementById('dpadDown').addEventListener('click', () => triggerPeripheral('net'));
+    document.getElementById('dpadLeft').addEventListener('click', () => triggerPeripheral('voice'));
+    document.getElementById('dpadRight').addEventListener('click', () => triggerPeripheral('canvas'));
+
+    // Peripheral Toolbar Mappings
+    document.getElementById('btnSensors').addEventListener('click', () => triggerPeripheral('telemetry'));
+    document.getElementById('btnVoice').addEventListener('click', () => triggerPeripheral('voice'));
+    document.getElementById('btnCanvas').addEventListener('click', () => triggerPeripheral('canvas'));
+    document.getElementById('btnNet').addEventListener('click', () => triggerPeripheral('net'));
+
+    updateMemoryUI();
+    appendMsg('ai', 'AETHER-GBC v2.5 ONLINE.\nSELECT GEMINI & PASTE API KEY ABOVE.', 'System initialized.');
+  }
+
+  function updateMemoryUI() {
+    let rc = document.getElementById('rule-count');
+    if(rc) rc.innerText = memory.length;
+    try { localStorage.setItem('aether_memory', JSON.stringify(memory)); } catch(e){}
+  }
+
+  function appendMsg(sender, text, thought, peripheral) {
+    let consoleElem = document.getElementById('console');
+    if(!consoleElem) return;
+    let msgDiv = document.createElement('div');
+    msgDiv.className = 'msg ' + sender;
+    
+    let html = '';
+    if (thought) html += '<div class="thought">💭 ' + thought + '</div>';
+    html += '<div>' + text.replace(/\n/g, '<br>') + '</div>';
+    if (peripheral) html += '<div class="peripheral-badge">🔌 PERIPHERAL: ' + peripheral + '</div>';
+    
+    msgDiv.innerHTML = html;
+    consoleElem.scrollTop = consoleElem.scrollHeight;
+  }
+
+  async function getTelemetry() {
+    return {
+      screen: window.innerWidth + 'x' + window.innerHeight,
+      online: navigator.onLine,
+      time: new Date().toLocaleTimeString()
+    };
+  }
+
+  function speakText(text) {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      let u = new SpeechSynthesisUtterance(text);
+      u.pitch = 0.9;
+      window.speechSynthesis.speak(u);
+    }
+  }
+
+  async function triggerPeripheral(type) {
+    if (type === 'telemetry') {
+      let data = await getTelemetry();
+      appendMsg('ai', 'Telemetry Readout:\n' + JSON.stringify(data, null, 2), 'Probe executed.', 'Sensors');
+    } else if (type === 'voice') {
+      speakText("Aether GBC voice online.");
+      appendMsg('ai', 'Audio Synthesizer engaged.', 'Synth online.', 'Voice');
+    } else if (type === 'canvas') {
+      appendMsg('ai', 'Canvas Graphics Engine ready.', 'Canvas ready.', 'Canvas');
+    } else if (type === 'net') {
+      appendMsg('ai', 'Network: ' + (navigator.onLine ? 'ONLINE' : 'OFFLINE'), 'Network ok.', 'Net');
+    }
+  }
+
+  async function sendMsg() {
+    let inputElem = document.getElementById('userInput');
+    if(!inputElem) return;
+    let text = inputElem.value.trim();
+    if (!text) return;
+
+    appendMsg('user', text, null, null);
+    inputElem.value = '';
+    inputElem.blur();
+
+    let lower = text.toLowerCase();
+    let extractedRule = null;
+    if (lower.includes("don't") || lower.includes("never") || lower.includes("stop") || lower.includes("error") || lower.includes("wrong")) {
+      extractedRule = 'Constraint: Avoid ' + text.substring(0, 25);
+      memory.push(extractedRule);
+      updateMemoryUI();
+    }
+
+    let apiKey = localStorage.getItem('aether_key');
+    if (!apiKey) {
+      appendMsg('ai', 'KEY REQUIRED IN TOP BAR.', 'Key check failed.', extractedRule);
+      return;
+    }
+
+    let telemetry = await getTelemetry();
+    let rulesStr = memory.map((r, i) => (i+1) + '. ' + r).join('\n');
+    let systemPrompt = 'SYSTEM: You are AETHER-2.5 on a Game Boy Color handheld interface.\nRules:\n' + rulesStr + '\nTelemetry: ' + JSON.stringify(telemetry) + '\nStart with <thought>...</thought>';
+
+    appendMsg('ai', 'PROCESSING...', 'Evaluating weights...', null);
+    let consoleElem = document.getElementById('console');
+    let loadingMsgElem = consoleElem ? consoleElem.lastChild : null;
+
+    let endpoint, modelName, headers;
+
+    if (provider === "gemini") {
+      endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+      modelName = "gemini-2.5-flash";
+      headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+    } else if (provider === "openai") {
+      endpoint = "https://api.openai.com/v1/chat/completions";
+      modelName = "gpt-4o-mini";
+      headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+    } else if (provider === "openrouter") {
+      endpoint = "https://openrouter.ai/api/v1/chat/completions";
+      modelName = "auto";
+      headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+    } else if (provider === "anthropic") {
+      endpoint = "https://api.anthropic.com/v1/messages";
+      modelName = "claude-3-5-haiku-20241022";
+      headers = { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "dangerously-allow-browser": "true" };
+    } else {
+      endpoint = "https://api.groq.com/openai/v1/chat/completions";
+      modelName = "llama-3.3-70b-versatile";
+      headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+    }
+
+    try {
+      let bodyData = provider === "anthropic" 
+        ? JSON.stringify({ model: modelName, system: systemPrompt, messages: [{ role: "user", content: text }], max_tokens: 800 })
+        : JSON.stringify({ model: modelName, messages: [{ role: "system", content: systemPrompt }, { role: "user", content: text }], temperature: 0.7 });
+
+      let res = await fetch(endpoint, { method: "POST", headers: headers, body: bodyData });
+      let data = await res.json();
+
+      if (loadingMsgElem) loadingMsgElem.remove();
+
+      if (data.error) {
+        appendMsg('ai', 'ERR: ' + (data.error.message || JSON.stringify(data.error)), 'Rejection.', extractedRule);
+        return;
+      }
+
+      let fullReply = provider === "anthropic" ? data.content[0].text : data.choices[0].message.content;
+      let thought = "Peripherals nominal.";
+      let mainResponse = fullReply;
+      let thoughtMatch = fullReply.match(/<thought>([\s\S]*?)<\/thought>/);
+      if (thoughtMatch) {
+        thought = thoughtMatch[1].trim();
+        mainResponse = fullReply.replace(/<thought>[\s\S]*?<\/thought>/, '').trim();
+      }
+
+      appendMsg('ai', mainResponse, thought, extractedRule ? "Heuristic Mutated" : "Synced");
+
+    } catch (err) {
+      if (loadingMsgElem) loadingMsgElem.remove();
+      appendMsg('ai', 'BUS ERR: ' + err.message, 'Connection failure.', extractedRule);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initUI);
+  } else {
+    initUI();
+  }
+})();
+</script>
+
+</body>
+</html>
