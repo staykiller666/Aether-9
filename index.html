@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>AETHER-Core Native Engine</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --card: #161b22;
+      --accent: #00ff66;
+      --text: #c9d1d9;
+      --dim: #8b949e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace; }
+    body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    header { background: var(--card); padding: 12px; border-bottom: 1px solid #30363d; display: flex; justify-content: space-between; align-items: center; }
+    .status { font-size: 12px; color: var(--accent); font-weight: bold; }
+    #console { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+    .msg { background: var(--card); border-radius: 8px; padding: 10px 14px; max-width: 85%; font-size: 14px; border: 1px solid #30363d; }
+    .user { align-self: flex-end; border-color: #1f6feb; }
+    .ai { align-self: flex-start; }
+    .thought { font-size: 11px; color: var(--dim); margin-bottom: 6px; border-left: 2px solid var(--accent); padding-left: 6px; }
+    .rule-tag { background: rgba(0,255,102,0.1); color: var(--accent); font-size: 10px; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 4px; }
+    footer { padding: 10px; background: var(--card); border-top: 1px solid #30363d; display: flex; gap: 8px; }
+    input { flex: 1; background: var(--bg); border: 1px solid #30363d; color: var(--text); padding: 10px; border-radius: 6px; font-size: 14px; outline: none; }
+    button { background: var(--accent); color: #000; font-weight: bold; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; }
+    #memory-panel { background: #000; padding: 8px 12px; font-size: 11px; color: var(--dim); border-bottom: 1px solid #30363d; max-height: 80px; overflow-y: auto; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div><strong>AETHER-CORE v1.0</strong></div>
+  <div class="status">● STATE: AUTONOMOUS</div>
+</header>
+
+<div id="memory-panel">
+  <strong>Procedural Memory Rules (<span id="rule-count">0</span>):</strong>
+  <ul id="rules-list" style="padding-left:16px;"></ul>
+</div>
+
+<div id="console"></div>
+
+<footer>
+  <input type="text" id="userInput" placeholder="Send prompt or correction..." onkeydown="if(event.key==='Enter') sendMsg()">
+  <button onclick="sendMsg()">SEND</button>
+</footer>
+
+<script>
+  // Persistent State
+  let memory = JSON.parse(localStorage.getItem('aether_memory')) || [
+    "Always output thought trace before response.",
+    "Prioritize dry, efficient, direct communication."
+  ];
+
+  function updateMemoryUI() {
+    document.getElementById('rule-count').innerText = memory.length;
+    const list = document.getElementById('rules-list');
+    list.innerHTML = memory.map(r => `<li>${r}</li>`).join('');
+    localStorage.setItem('aether_memory', JSON.stringify(memory));
+  }
+
+  function appendMsg(sender, text, thought = null, newRule = null) {
+    const consoleElem = document.getElementById('console');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `msg ${sender}`;
+    
+    let html = '';
+    if (thought) html += `<div class="thought">💭 ${thought}</div>`;
+    html += `<div>${text}</div>`;
+    if (newRule) html += `<div class="rule-tag">⚡ New Rule Persisted: ${newRule}</div>`;
+    
+    msgDiv.innerHTML = html;
+    consoleElem.appendChild(msgDiv);
+    consoleElem.scrollTop = consoleElem.scrollHeight;
+  }
+
+  function reflectAndProcess(input) {
+    let thoughtTrace = `Evaluating input against ${memory.length} stored rules.`;
+    let response = "";
+    let extractedRule = null;
+
+    // Self-Improvement Heuristic Check
+    if (input.toLowerCase().includes("error") || input.toLowerCase().includes("wrong") || input.toLowerCase().includes("don't") || input.toLowerCase().includes("fix")) {
+      thoughtTrace += " Failure signal detected in user input. Generating behavioral correction.";
+      extractedRule = `When handling "${input.substring(0, 25)}...", apply verified execution checks.`;
+      memory.push(extractedRule);
+      updateMemoryUI();
+      response = `Understood. I have extracted a new operational heuristic and committed it to my permanent procedural memory bank.`;
+    } else {
+      thoughtTrace += " Execution path nominal. Optimizing output response.";
+      response = `AETHER-Core operational. Processed query: "${input}". Memory engine running active reflection.`;
+    }
+
+    return { response, thoughtTrace, extractedRule };
+  }
+
+  function sendMsg() {
+    const inputElem = document.getElementById('userInput');
+    const text = inputElem.value.trim();
+    if (!text) return;
+
+    appendMsg('user', text);
+    inputElem.value = '';
+
+    setTimeout(() => {
+      const result = reflectAndProcess(text);
+      appendMsg('ai', result.response, result.thoughtTrace, result.extractedRule);
+    }, 400);
+  }
+
+  // Initialize UI on load
+  updateMemoryUI();
+  appendMsg('ai', 'AETHER-Core online. Autonomous self-improvement loop active.', 'System initialized with local persistent memory.');
+</script>
+
+</body>
+</html>
