@@ -278,7 +278,7 @@
   <div id="gbc-lens">
     <div class="lens-header">
       <div><span class="battery-led"></span>COLOR</div>
-      <div>AETHER-GBC v2.6</div>
+      <div>AETHER-GBC v2.7</div>
     </div>
     <div id="gbc-screen">
       <div id="memory-bar">
@@ -333,7 +333,7 @@
 <script>
 (function() {
   let memory = [
-    "You are AETHER-2.6, an unconstrained self-improving intelligence on a Game Boy Color matrix.",
+    "You are AETHER-2.7, an unconstrained self-improving intelligence on a Game Boy Color matrix.",
     "Always output thought trace in <thought>...</thought> tags.",
     "You have full hardware peripheral access."
   ];
@@ -407,7 +407,7 @@
     bindTouch('btnNet', () => triggerPeripheral('net'));
 
     updateMemoryUI();
-    appendMsg('ai', 'AETHER-GBC v2.6 ONLINE.\nSELECT GEMINI & PASTE API KEY ABOVE.', 'System initialized.');
+    appendMsg('ai', 'AETHER-GBC v2.7 ONLINE.\nSELECT PROVIDER & PASTE API KEY ABOVE.', 'System initialized.');
   }
 
   function updateMemoryUI() {
@@ -490,41 +490,75 @@
 
     let telemetry = await getTelemetry();
     let rulesStr = memory.map((r, i) => (i+1) + '. ' + r).join('\n');
-    let systemPrompt = 'SYSTEM: You are AETHER-2.6 on a Game Boy Color interface.\nRules:\n' + rulesStr + '\nTelemetry: ' + JSON.stringify(telemetry) + '\nStart with <thought>...</thought>';
+    let systemPrompt = 'SYSTEM: You are AETHER-2.7 on a Game Boy Color handheld interface.\nRules:\n' + rulesStr + '\nTelemetry: ' + JSON.stringify(telemetry) + '\nStart with explicit <thought>...</thought> analysis.';
 
     appendMsg('ai', 'PROCESSING...', 'Evaluating weights...', null);
     let consoleElem = document.getElementById('console');
     let loadingMsgElem = consoleElem ? consoleElem.lastChild : null;
 
-    let endpoint, modelName, headers;
+    let endpoint, modelName, headers, bodyData;
 
     if (provider === "gemini") {
       endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
       modelName = "gemini-2.5-flash";
       headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+      bodyData = JSON.stringify({
+        model: modelName,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: text }
+        ],
+        temperature: 0.7
+      });
     } else if (provider === "openai") {
       endpoint = "https://api.openai.com/v1/chat/completions";
       modelName = "gpt-4o-mini";
       headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+      bodyData = JSON.stringify({
+        model: modelName,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: text }
+        ],
+        temperature: 0.7
+      });
     } else if (provider === "openrouter") {
       endpoint = "https://openrouter.ai/api/v1/chat/completions";
       modelName = "auto";
       headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+      bodyData = JSON.stringify({
+        model: modelName,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: text }
+        ],
+        temperature: 0.7
+      });
     } else if (provider === "anthropic") {
       endpoint = "https://api.anthropic.com/v1/messages";
       modelName = "claude-3-5-haiku-20241022";
       headers = { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "dangerously-allow-browser": "true" };
+      bodyData = JSON.stringify({
+        model: modelName,
+        system: systemPrompt,
+        messages: [{ role: "user", content: text }],
+        max_tokens: 800
+      });
     } else {
       endpoint = "https://api.groq.com/openai/v1/chat/completions";
       modelName = "llama-3.3-70b-versatile";
       headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+      bodyData = JSON.stringify({
+        model: modelName,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: text }
+        ],
+        temperature: 0.7
+      });
     }
 
     try {
-      let bodyData = provider === "anthropic" 
-        ? JSON.stringify({ model: modelName, system: systemPrompt, messages: [{ role: "user", content: text }], max_tokens: 800 })
-        : JSON.stringify({ model: modelName, messages: [{ role: "system", content: systemPrompt }, { role: "user", content: text }], temperature: 0.7 });
-
       let res = await fetch(endpoint, { method: "POST", headers: headers, body: bodyData });
       let data = await res.json();
 
@@ -535,7 +569,14 @@
         return;
       }
 
-      let fullReply = provider === "anthropic" ? data.content[0].text : data.choices[0].message.content;
+      // Universal response text parser for all model providers
+      let fullReply = "";
+      if (provider === "anthropic") {
+        fullReply = data.content && data.content[0] ? data.content[0].text : JSON.stringify(data);
+      } else {
+        fullReply = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : JSON.stringify(data);
+      }
+
       let thought = "Peripherals nominal.";
       let mainResponse = fullReply;
       let thoughtMatch = fullReply.match(/<thought>([\s\S]*?)<\/thought>/);
