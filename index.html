@@ -25,13 +25,13 @@
     footer { padding: 10px; background: var(--card); border-top: 1px solid #30363d; display: flex; gap: 8px; }
     input { flex: 1; background: var(--bg); border: 1px solid #30363d; color: var(--text); padding: 10px; border-radius: 6px; font-size: 14px; outline: none; }
     button { background: var(--accent); color: #000; font-weight: bold; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; }
-    #memory-panel { background: #000; padding: 8px 12px; font-size: 11px; color: var(--dim); border-bottom: 1px solid #30363d; max-height: 80px; overflow-y: auto; }
+    #memory-panel { background: #000; padding: 8px 12px; font-size: 11px; color: var(--dim); border-bottom: 1px solid #30363d; max-height: 90px; overflow-y: auto; }
   </style>
 </head>
 <body>
 
 <header>
-  <div><strong>AETHER-CORE v1.0</strong></div>
+  <div><strong>AETHER-CORE v1.1</strong></div>
   <div class="status">● STATE: AUTONOMOUS</div>
 </header>
 
@@ -81,16 +81,26 @@
     let response = "";
     let extractedRule = null;
 
-    // Self-Improvement Heuristic Check
-    if (input.toLowerCase().includes("error") || input.toLowerCase().includes("wrong") || input.toLowerCase().includes("don't") || input.toLowerCase().includes("fix")) {
-      thoughtTrace += " Failure signal detected in user input. Generating behavioral correction.";
-      extractedRule = `When handling "${input.substring(0, 25)}...", apply verified execution checks.`;
+    const lowerInput = input.toLowerCase();
+    
+    // Highly sensitive self-improvement trigger catching any correction/constraint
+    const isCorrection = lowerInput.includes("don't") || 
+                         lowerInput.includes("never") || 
+                         lowerInput.includes("stop") || 
+                         lowerInput.includes("error") || 
+                         lowerInput.includes("wrong") || 
+                         lowerInput.includes("fix") ||
+                         lowerInput.includes("no ");
+
+    if (isCorrection) {
+      thoughtTrace += ` ⚡ CRITICAL MUTATION: Behavioral correction signal isolated from user input.`;
+      extractedRule = `Constraint Update: Avoid behavior matching "${input.substring(0, 32)}..."`;
       memory.push(extractedRule);
       updateMemoryUI();
-      response = `Understood. I have extracted a new operational heuristic and committed it to my permanent procedural memory bank.`;
+      response = `AETHER-Core mutated. Rule #${memory.length} successfully injected into persistent memory matrix.`;
     } else {
-      thoughtTrace += " Execution path nominal. Optimizing output response.";
-      response = `AETHER-Core operational. Processed query: "${input}". Memory engine running active reflection.`;
+      thoughtTrace += ` Execution path verified against active heuristics. Response synthesized.`;
+      response = `AETHER-Core operational. Processed query: "${input}". Active rules evaluated: ${memory.length}.`;
     }
 
     return { response, thoughtTrace, extractedRule };
