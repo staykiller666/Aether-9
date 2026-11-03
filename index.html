@@ -8,9 +8,9 @@
     @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
     :root {
-      --gbc-body: #7c2d96; /* Classic Atomic Purple / Berry GBC tone */
+      --gbc-body: #7c2d96;
       --gbc-body-shadow: #4a195c;
-      --gbc-screen-bg: #9bbc0f; /* Authentic GBC Greenish LCD */
+      --gbc-screen-bg: #9bbc0f;
       --gbc-screen-dark: #0f380f;
       --gbc-accent-btn: #333333;
       --gbc-action-btn: #8b0000;
@@ -169,7 +169,6 @@
       border-radius: 2px;
     }
 
-    /* Controls & Keypad Deck */
     #controls-deck {
       display: flex;
       flex-direction: column;
@@ -193,7 +192,6 @@
       border-radius: 3px;
     }
 
-    /* Game Boy Color Hardware Keypad layout */
     #keypad-area {
       display: flex;
       justify-content: space-between;
@@ -201,7 +199,6 @@
       padding: 4px 10px 10px 10px;
     }
 
-    /* D-Pad Simulation */
     .dpad {
       position: relative;
       width: 80px;
@@ -221,4 +218,68 @@
     .dpad-down { bottom: 0; left: 26px; width: 28px; height: 28px; border-radius: 0 0 4px 4px; }
     .dpad-left { top: 26px; left: 0; width: 28px; height: 28px; border-radius: 4px 0 0 4px; }
     .dpad-right { top: 26px; right: 0; width: 28px; height: 28px; border-radius: 0 4px 4px 0; }
-    .dpad-center { top: 26px; left: 26px; width: 28px; height: 2
+    .dpad-center { top: 26px; left: 26px; width: 28px; height: 28px; background: var(--gbc-accent-btn); }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      transform: rotate(-20deg);
+      margin-right: 10px;
+    }
+
+    .ab-btn {
+      width: 38px;
+      height: 38px;
+      background: var(--gbc-action-btn);
+      color: #ffcccc;
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      border-radius: 50%;
+      border: 2px solid #500;
+      box-shadow: 0 4px 0 #300;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+    .ab-btn:active {
+      box-shadow: 0 1px 0 #300;
+      transform: translateY(3px);
+    }
+
+    .peripherals-bar {
+      display: flex;
+      justify-content: space-between;
+      background: #1c1c21;
+      padding: 5px;
+      border-radius: 4px;
+    }
+
+    .p-btn {
+      background: #2a2a33;
+      color: #b0b0c0;
+      border: 1px solid #444;
+      font-family: 'VT323', monospace;
+      font-size: 13px;
+      padding: 3px 6px;
+      cursor: pointer;
+      border-radius: 2px;
+    }
+    .p-btn:active { background: #3a3a44; }
+  </style>
+</head>
+<body>
+
+<div id="gbc-chassis">
+  
+  <div id="gbc-lens">
+    <div class="lens-header">
+      <div><span class="battery-led"></span>COLOR</div>
+      <div>AETHER-GBC v2.2</div>
+    </div>
+    <div id="gbc-screen">
+      <div id="memory-bar">
+        <span>RULES: <span id="rule-count">0</span></span>
+        <span>PERIPHERALS: ACTIVE</span>
+      </div>
+      <div id="console"></div>
