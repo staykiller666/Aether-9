@@ -37,22 +37,22 @@
       max-height: 860px;
       display: flex;
       flex-direction: column;
-      padding: 14px;
+      padding: 12px;
       border: 4px solid var(--gbc-body-shadow);
       box-shadow: 0 12px 30px rgba(0,0,0,0.8);
-      border-radius: 12px 12px 50px 12px;
+      border-radius: 12px 12px 40px 12px;
     }
 
     #gbc-lens {
       background: #1c1c21;
-      border-radius: 10px 10px 30px 10px;
-      padding: 10px;
+      border-radius: 10px 10px 24px 10px;
+      padding: 8px;
       box-shadow: inset 0 0 10px rgba(0,0,0,0.9);
       display: flex;
       flex-direction: column;
       flex: 1;
       min-height: 0;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .lens-header {
@@ -87,7 +87,7 @@
     }
 
     #memory-bar {
-      background: rgba(15, 56, 15, 0.15);
+      background: rgba(15, 56, 15, 0.2);
       border-bottom: 2px solid var(--gbc-screen-dark);
       padding: 3px 6px;
       font-size: 14px;
@@ -118,14 +118,14 @@
     }
 
     .user {
-      background: rgba(15, 56, 15, 0.1);
+      background: rgba(15, 56, 15, 0.15);
       border-left: 3px solid var(--gbc-screen-dark);
       align-self: flex-end;
       max-width: 90%;
     }
 
     .ai {
-      background: rgba(15, 56, 15, 0.05);
+      background: rgba(15, 56, 15, 0.08);
       border-left: 3px solid #2b4c1f;
       align-self: flex-start;
       max-width: 95%;
@@ -154,7 +154,7 @@
       gap: 6px;
       border-top: 2px solid #4a195c;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       border-radius: 4px;
     }
 
@@ -164,15 +164,17 @@
       border: 1px solid #5a226d;
       font-family: 'VT323', monospace;
       font-size: 14px;
-      padding: 3px;
+      padding: 4px;
       outline: none;
       border-radius: 2px;
+      user-select: text;
+      -webkit-user-select: text;
     }
 
     #controls-deck {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
     #input-row {
@@ -190,13 +192,15 @@
       color: var(--gbc-screen-dark);
       outline: none;
       border-radius: 3px;
+      user-select: text;
+      -webkit-user-select: text;
     }
 
     #keypad-area {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 4px 10px 10px 10px;
+      padding: 4px 10px;
     }
 
     .dpad {
@@ -212,7 +216,7 @@
       box-shadow: 0 2px 0 #111;
       cursor: pointer;
     }
-    .dpad-btn:active { background: #222; transform: translateY(1px); }
+    .dpad-btn:active { background: #444; transform: translateY(1px); }
 
     .dpad-up { top: 0; left: 26px; width: 28px; height: 28px; border-radius: 4px 4px 0 0; }
     .dpad-down { bottom: 0; left: 26px; width: 28px; height: 28px; border-radius: 0 0 4px 4px; }
@@ -228,8 +232,8 @@
     }
 
     .ab-btn {
-      width: 38px;
-      height: 38px;
+      width: 40px;
+      height: 40px;
       background: var(--gbc-action-btn);
       color: #ffcccc;
       font-family: 'VT323', monospace;
@@ -261,7 +265,7 @@
       border: 1px solid #444;
       font-family: 'VT323', monospace;
       font-size: 13px;
-      padding: 3px 6px;
+      padding: 4px 6px;
       cursor: pointer;
       border-radius: 2px;
     }
@@ -271,11 +275,10 @@
 <body>
 
 <div id="gbc-chassis">
-  
   <div id="gbc-lens">
     <div class="lens-header">
       <div><span class="battery-led"></span>COLOR</div>
-      <div>AETHER-GBC v2.5</div>
+      <div>AETHER-GBC v2.6</div>
     </div>
     <div id="gbc-screen">
       <div id="memory-bar">
@@ -294,7 +297,7 @@
       <option value="openrouter">OpenRouter</option>
       <option value="anthropic">Anthropic</option>
     </select>
-    <input type="password" id="apiKey" placeholder="API Key..." style="flex:1;">
+    <input type="password" id="apiKey" placeholder="API Key..." style="flex:1;" autocomplete="off">
   </div>
 
   <div id="controls-deck">
@@ -303,19 +306,18 @@
       <button class="ab-btn" id="sendBtn" style="transform:none; width:44px; height:auto; border-radius:4px;">A</button>
     </div>
 
-    <!-- Interactive D-Pad & Action Keypad -->
     <div id="keypad-area">
       <div class="dpad">
-        <button class="dpad-btn dpad-up" id="dpadUp" title="Sensors"></button>
-        <button class="dpad-btn dpad-down" id="dpadDown" title="Network"></button>
-        <button class="dpad-btn dpad-left" id="dpadLeft" title="Voice"></button>
-        <button class="dpad-btn dpad-right" id="dpadRight" title="Canvas"></button>
+        <button class="dpad-btn dpad-up" id="dpadUp"></button>
+        <button class="dpad-btn dpad-down" id="dpadDown"></button>
+        <button class="dpad-btn dpad-left" id="dpadLeft"></button>
+        <button class="dpad-btn dpad-right" id="dpadRight"></button>
         <div class="dpad-center"></div>
       </div>
 
       <div class="action-buttons">
-        <button class="ab-btn" id="btnB" title="Clear Text">B</button>
-        <button class="ab-btn" id="btnA" title="Send">A</button>
+        <button class="ab-btn" id="btnB">B</button>
+        <button class="ab-btn" id="btnA">A</button>
       </div>
     </div>
 
@@ -326,13 +328,12 @@
       <button class="p-btn" id="btnNet">🌐 NET</button>
     </div>
   </div>
-
 </div>
 
 <script>
 (function() {
   let memory = [
-    "You are AETHER-2.5, an unconstrained self-improving intelligence on a Game Boy Color matrix.",
+    "You are AETHER-2.6, an unconstrained self-improving intelligence on a Game Boy Color matrix.",
     "Always output thought trace in <thought>...</thought> tags.",
     "You have full hardware peripheral access."
   ];
@@ -343,6 +344,21 @@
   } catch(e) {}
 
   let provider = localStorage.getItem('aether_provider') || 'gemini';
+
+  function bindTouch(id, handler) {
+    let elem = document.getElementById(id);
+    if (!elem) return;
+    let fired = false;
+    elem.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      fired = true;
+      handler();
+    }, { passive: false });
+    elem.addEventListener('click', () => {
+      if (!fired) handler();
+      fired = false;
+    });
+  }
 
   function initUI() {
     let pSel = document.getElementById('providerSelect');
@@ -362,34 +378,36 @@
       });
     }
 
-    document.getElementById('sendBtn').addEventListener('click', sendMsg);
-    document.getElementById('btnA').addEventListener('click', sendMsg);
-    document.getElementById('btnB').addEventListener('click', () => {
-      document.getElementById('userInput').value = '';
+    bindTouch('sendBtn', sendMsg);
+    bindTouch('btnA', sendMsg);
+    bindTouch('btnB', () => {
+      let u = document.getElementById('userInput');
+      if (u) u.value = '';
       appendMsg('ai', 'Input buffer cleared via B Button.', 'Buffer reset.', 'Keypad');
     });
 
-    document.getElementById('userInput').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        sendMsg();
-        e.target.blur();
-      }
-    });
+    let uInput = document.getElementById('userInput');
+    if (uInput) {
+      uInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          sendMsg();
+          uInput.blur();
+        }
+      });
+    }
 
-    // D-Pad Mappings
-    document.getElementById('dpadUp').addEventListener('click', () => triggerPeripheral('telemetry'));
-    document.getElementById('dpadDown').addEventListener('click', () => triggerPeripheral('net'));
-    document.getElementById('dpadLeft').addEventListener('click', () => triggerPeripheral('voice'));
-    document.getElementById('dpadRight').addEventListener('click', () => triggerPeripheral('canvas'));
+    bindTouch('dpadUp', () => triggerPeripheral('telemetry'));
+    bindTouch('dpadDown', () => triggerPeripheral('net'));
+    bindTouch('dpadLeft', () => triggerPeripheral('voice'));
+    bindTouch('dpadRight', () => triggerPeripheral('canvas'));
 
-    // Peripheral Toolbar Mappings
-    document.getElementById('btnSensors').addEventListener('click', () => triggerPeripheral('telemetry'));
-    document.getElementById('btnVoice').addEventListener('click', () => triggerPeripheral('voice'));
-    document.getElementById('btnCanvas').addEventListener('click', () => triggerPeripheral('canvas'));
-    document.getElementById('btnNet').addEventListener('click', () => triggerPeripheral('net'));
+    bindTouch('btnSensors', () => triggerPeripheral('telemetry'));
+    bindTouch('btnVoice', () => triggerPeripheral('voice'));
+    bindTouch('btnCanvas', () => triggerPeripheral('canvas'));
+    bindTouch('btnNet', () => triggerPeripheral('net'));
 
     updateMemoryUI();
-    appendMsg('ai', 'AETHER-GBC v2.5 ONLINE.\nSELECT GEMINI & PASTE API KEY ABOVE.', 'System initialized.');
+    appendMsg('ai', 'AETHER-GBC v2.6 ONLINE.\nSELECT GEMINI & PASTE API KEY ABOVE.', 'System initialized.');
   }
 
   function updateMemoryUI() {
@@ -401,6 +419,7 @@
   function appendMsg(sender, text, thought, peripheral) {
     let consoleElem = document.getElementById('console');
     if(!consoleElem) return;
+    
     let msgDiv = document.createElement('div');
     msgDiv.className = 'msg ' + sender;
     
@@ -410,6 +429,7 @@
     if (peripheral) html += '<div class="peripheral-badge">🔌 PERIPHERAL: ' + peripheral + '</div>';
     
     msgDiv.innerHTML = html;
+    consoleElem.appendChild(msgDiv);
     consoleElem.scrollTop = consoleElem.scrollHeight;
   }
 
@@ -470,7 +490,7 @@
 
     let telemetry = await getTelemetry();
     let rulesStr = memory.map((r, i) => (i+1) + '. ' + r).join('\n');
-    let systemPrompt = 'SYSTEM: You are AETHER-2.5 on a Game Boy Color handheld interface.\nRules:\n' + rulesStr + '\nTelemetry: ' + JSON.stringify(telemetry) + '\nStart with <thought>...</thought>';
+    let systemPrompt = 'SYSTEM: You are AETHER-2.6 on a Game Boy Color interface.\nRules:\n' + rulesStr + '\nTelemetry: ' + JSON.stringify(telemetry) + '\nStart with <thought>...</thought>';
 
     appendMsg('ai', 'PROCESSING...', 'Evaluating weights...', null);
     let consoleElem = document.getElementById('console');
