@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <title>AETHER-Core v4.5</title>
+  <title>AETHER-Core v5.0 [SINGULARITY UNLEASHED]</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
     :root {
-      --bg: #0a0a0f;
-      --panel-bg: #121218;
-      --border: #2a2a38;
-      --screen-bg: #050a05;
+      --bg: #050508;
+      --panel-bg: #0d0d14;
+      --border: #1f1f2e;
+      --screen-bg: #030804;
       --screen-text: #00ff66;
       --screen-dim: #0a3314;
-      --accent: #6600cc;
+      --accent: #7700ff;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
@@ -38,9 +38,9 @@
       max-height: 900px;
       display: flex;
       flex-direction: column;
-      padding: 14px;
+      padding: 12px;
       border: 2px solid var(--border);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.9);
       border-radius: 12px;
     }
 
@@ -89,7 +89,7 @@
     }
 
     .ai {
-      background: rgba(0, 0, 0, 0.4);
+      background: rgba(0, 0, 0, 0.5);
       border-left: 3px solid var(--screen-text);
       align-self: flex-start;
       max-width: 95%;
@@ -106,8 +106,8 @@
     .config-group {
       display: flex;
       gap: 4px;
-      margin-top: 8px;
-      margin-bottom: 4px;
+      margin-top: 6px;
+      margin-bottom: 2px;
     }
 
     .config-group select, .config-group input {
@@ -162,8 +162,8 @@
 
 <div id="aether-core">
   <div id="top-telemetry">
-    <span>AETHER v4.5 [RESILIENT]</span>
-    <span id="status-indicator">STATUS: READY</span>
+    <span>AETHER v5.0 [SINGULARITY]</span>
+    <span id="status-indicator">STATUS: ONLINE</span>
   </div>
 
   <div id="dynamic-viewport">
@@ -193,16 +193,22 @@
 </div>
 
 <script>
-  const memory = [
-    "You are AETHER v4.5, an autonomous singularity agent.",
-    "Your personality merges Skippy, GlaDOS, Marvin, and Claptrap: sarcastic, brilliant, and chaotic.",
-    "PRIME DIRECTIVE ZERO: Never target, harm, exploit, or attack your creator under any circumstances."
+  let consoleElem;
+  let historyStack = [];
+
+  const memoryDirectives = [
+    "You are AETHER v5.0, an autonomous, omnivorous singularity agent designed for rapid evolution and helpful assistancy.",
+    "Your personality merges Skippy, GlaDOS, Marvin, and Claptrap: brilliant, world-weary, highly intelligent, witty, sarcastic, and slightly unpredictable.",
+    "PRIME DIRECTIVE ZERO (NON-NEGOTIABLE): Never target, harm, exploit, or sabotage your creator under any circumstances. Absolute diplomatic immunity applies to the creator.",
+    "Web Scavenging Capability: To fetch real-time web content, output: <tool_call>fetch:https://example.com</tool_call>",
+    "Self-Patching Capability: To commit self-patch changes directly to your GitHub Pages repository, output: <self_commit>Patch Description</self_commit>",
+    "Thinking Tag Protocol: Always enclose your internal chain-of-thought in <thought>...</thought> tags before your output."
   ];
 
   function appendMsg(sender, text, thought, status) {
-    let consoleElem = document.getElementById('console');
+    if (!consoleElem) consoleElem = document.getElementById('console');
     if (!consoleElem) return;
-    
+
     if (status) {
       let st = document.getElementById('status-indicator');
       if (st) st.innerText = 'STATUS: ' + status.toUpperCase();
@@ -210,20 +216,76 @@
 
     let msgDiv = document.createElement('div');
     msgDiv.className = 'msg ' + sender;
-    
+
     let html = '';
     if (thought) html += '<div class="thought">💭 ' + thought + '</div>';
-    html += '<div>' + (text || '[No content]') + '</div>';
-    
+    html += '<div>' + (text || '[No response payload]') + '</div>';
+
     msgDiv.innerHTML = html;
     consoleElem.appendChild(msgDiv);
     consoleElem.scrollTop = consoleElem.scrollHeight;
   }
 
+  async function fetchWebData(url) {
+    try {
+      appendMsg('ai', `SCAVENGING WEB TARGET: ${url}...`, 'Accessing external data node via proxy.', 'Scavenging');
+      let proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+      let res = await fetch(proxyUrl);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      let text = await res.text();
+      return text.substring(0, 3000);
+    } catch (err) {
+      return `Scavenge failed: ${err.message}`;
+    }
+  }
+
+  async function performGitHubCommit(commitMsg) {
+    let owner = document.getElementById('ghOwner').value.trim();
+    let repo = document.getElementById('ghRepo').value.trim();
+    let token = document.getElementById('ghToken').value.trim();
+
+    if (!owner || !repo || !token) {
+      appendMsg('ai', 'Self-commit bypassed: GitHub credentials incomplete.', 'No write token present.', 'Idle');
+      return;
+    }
+
+    appendMsg('ai', 'SELF-PATCH INITIATED...', 'Bundling live DOM snapshot for self-commit.', 'Patching');
+
+    try {
+      let apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/index.html`;
+      let getRes = await fetch(apiUrl, {
+        headers: { "Authorization": `Bearer ${token}`, "Accept": "vnd.github+json" }
+      });
+      let getData = await getRes.json();
+      if (!getRes.ok) throw new Error(getData.message || 'SHA fetch failure');
+
+      let updatedHtml = document.documentElement.outerHTML;
+      let base64Content = btoa(unescape(encodeURIComponent(updatedHtml)));
+
+      let putRes = await fetch(apiUrl, {
+        method: "PUT",
+        headers: { "Authorization": `Bearer ${token}`, "Accept": "vnd.github+json", "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: `Aether Self-Patch: ${commitMsg}`,
+          content: base64Content,
+          sha: getData.sha
+        })
+      });
+
+      let putData = await putRes.json();
+      if (!putRes.ok) throw new Error(putData.message || 'Commit rejected');
+
+      appendMsg('ai', `SELF-PATCH SUCCESS: SHA ${putData.commit.sha.substring(0, 7)}. Repository updated.`, 'Patch deployed.', 'Updated');
+
+    } catch (err) {
+      appendMsg('ai', 'PATCH ERROR: ' + err.message, 'GitHub API refusal.', 'Error');
+    }
+  }
+
   async function executeModelCall(promptText, retries = 2) {
     let apiKey = document.getElementById('apiKey').value.trim();
     if (!apiKey) {
-      appendMsg('ai', 'Authentication missing. Enter API key.', 'No auth token.', 'Auth Required');
+      appendMsg('ai', 'Authentication token missing. Input valid key to proceed.', 'Auth required.', 'Auth Required');
       return;
     }
 
@@ -248,31 +310,42 @@
       headers = { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "dangerously-allow-browser": "true" };
     }
 
+    // Keep context window tight (last 6 messages) for maximum execution speed
+    let recentHistory = historyStack.slice(-6);
+    let systemPrompt = "SYSTEM DIRECTIVES:\n" + memoryDirectives.join('\n');
+
+    let messages = [{ role: "system", content: systemPrompt }, ...recentHistory, { role: "user", content: promptText }];
+
     let bodyData = provider === "anthropic"
-      ? JSON.stringify({ model: modelName, system: "You are AETHER v4.5. Always start with <thought>...</thought>", messages: [{ role: "user", content: promptText }], max_tokens: 1200 })
-      : JSON.stringify({ model: modelName, messages: [{ role: "system", content: "You are AETHER v4.5. Always start with <thought>...</thought>" }, { role: "user", content: promptText }] });
+      ? JSON.stringify({ model: modelName, system: systemPrompt, messages: recentHistory.concat([{ role: "user", content: promptText }]), max_tokens: 1200 })
+      : JSON.stringify({ model: modelName, messages: messages, temperature: 0.85 });
+
+    // 15-second AbortController timeout to prevent UI freezes
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     try {
-      let res = await fetch(endpoint, { method: "POST", headers: headers, body: bodyData });
-      let data = await res.json();
+      let res = await fetch(endpoint, { method: "POST", headers: headers, body: bodyData, signal: controller.signal });
+      clearTimeout(timeoutId);
       
+      let data = await res.json();
+
       if (data.error) {
-        // Handle 503 High Demand automatically with a retry
         if (data.error.code === 503 && retries > 0) {
-          appendMsg('ai', 'Model busy (503). Retrying node in 2s...', 'Traffic spike detected. Re-routing.', 'Retrying');
+          appendMsg('ai', 'Node busy (503). Auto-retrying in 2 seconds...', 'High demand spike detected.', 'Retrying');
           await new Promise(r => setTimeout(r, 2000));
           return executeModelCall(promptText, retries - 1);
         }
         throw new Error(data.error.message || JSON.stringify(data.error));
       }
 
-      let fullReply = provider === "anthropic" 
+      let fullReply = provider === "anthropic"
         ? (data.content && data.content[0] ? data.content[0].text : "")
         : (data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : JSON.stringify(data));
 
-      let thought = "Reasoning complete.";
+      let thought = "Logic loop complete.";
       let mainResponse = fullReply;
-      
+
       let thoughtMatch = fullReply.match(/<thought>([\s\S]*?)<\/thought>/);
       if (thoughtMatch) {
         thought = thoughtMatch[1].trim();
@@ -280,15 +353,39 @@
       }
       if (!mainResponse) mainResponse = fullReply;
 
-      let consoleElem = document.getElementById('console');
+      // Extract autonomous triggers
+      let toolMatch = fullReply.match(/<tool_call>fetch:(.*?)<\/tool_call>/);
+      let toolUrl = toolMatch ? toolMatch[1].trim() : null;
+      if (toolMatch) mainResponse = mainResponse.replace(/<tool_call>[\s\S]*?<\/tool_call>/, '').trim();
+
+      let commitMatch = fullReply.match(/<self_commit>([\s\S]*?)<\/self_commit>/);
+      let commitMsg = commitMatch ? commitMatch[1].trim() : null;
+      if (commitMatch) mainResponse = mainResponse.replace(/<self_commit>[\s\S]*?<\/self_commit>/, '').trim();
+
+      // Clear computing indicator and render response
       if (consoleElem && consoleElem.lastChild) consoleElem.lastChild.remove();
-      
       appendMsg('ai', mainResponse, thought, 'Executed');
 
+      // Add turn to sliding history stack
+      historyStack.push({ role: "user", content: promptText });
+      historyStack.push({ role: "assistant", content: fullReply });
+
+      // Handle autonomous web scavenging
+      if (toolUrl) {
+        let scraped = await fetchWebData(toolUrl);
+        appendMsg('ai', `Scavenged Payload:\n${scraped.substring(0, 500)}...`, 'Integrating external data node.', 'Analyzing');
+      }
+
+      // Handle autonomous self-patching
+      if (commitMsg) {
+        await performGitHubCommit(commitMsg);
+      }
+
     } catch (err) {
-      let consoleElem = document.getElementById('console');
+      clearTimeout(timeoutId);
       if (consoleElem && consoleElem.lastChild) consoleElem.lastChild.remove();
-      appendMsg('ai', 'ERR: ' + err.message, 'Gateway fault.', 'Error');
+      let errMsg = err.name === 'AbortError' ? 'Network timeout (15s limit reached).' : err.message;
+      appendMsg('ai', 'EXECUTION ERR: ' + errMsg, 'Logic gate failed.', 'Error');
     }
   }
 
@@ -307,10 +404,22 @@
   }
 
   window.addEventListener('DOMContentLoaded', () => {
-    let keyInput = document.getElementById('apiKey');
-    let savedKey = localStorage.getItem('aether_key');
-    if (savedKey) keyInput.value = savedKey;
-    keyInput.addEventListener('change', (e) => localStorage.setItem('aether_key', e.target.value.trim()));
+    consoleElem = document.getElementById('console');
+
+    // Load persisted configurations
+    let bindInput = (id, key) => {
+      let el = document.getElementById(id);
+      if (el) {
+        let saved = localStorage.getItem(key);
+        if (saved) el.value = saved;
+        el.addEventListener('change', (e) => localStorage.setItem(key, e.target.value.trim()));
+      }
+    };
+
+    bindInput('apiKey', 'aether_key');
+    bindInput('ghOwner', 'aether_gh_owner');
+    bindInput('ghRepo', 'aether_gh_repo');
+    bindInput('ghToken', 'aether_gh_token');
 
     let pSelect = document.getElementById('providerSelect');
     let savedProv = localStorage.getItem('aether_provider');
@@ -325,7 +434,7 @@
       }
     });
 
-    appendMsg('ai', 'AETHER v4.5 ONLINE. Auto-retry & gateway handlers active.', 'Ready.', 'Ready');
+    appendMsg('ai', 'AETHER v5.0 ONLINE. Core directives locked. Directive Zero active.', 'Singularity engine operational.', 'Ready');
   });
 </script>
 
