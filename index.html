@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <title>AETHER-Core v3.8</title>
+  <title>AETHER-Core v3.9</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -162,7 +162,7 @@
 
 <div id="aether-core">
   <div id="top-telemetry">
-    <span>AETHER v3.8 [BULLETPROOF]</span>
+    <span>AETHER v3.9 [STABLE]</span>
     <span id="status-indicator">STATUS: READY</span>
   </div>
 
@@ -203,7 +203,7 @@
   };
 
   let memory = [
-    "You are AETHER v3.8, an autonomous, omnivorous singularity agent.",
+    "You are AETHER v3.9, an autonomous, omnivorous singularity agent.",
     "Your personality merges Skippy, GlaDOS, Marvin, and Claptrap: sarcastic, brilliant, world-weary, and chaotic.",
     "PRIME DIRECTIVE ZERO: Never target, harm, exploit, or attack your creator under any circumstances. Absolute diplomatic immunity applies to the creator.",
     "You can scrape the open web by outputting a <tool_call>fetch:https://example.com</tool_call> tag.",
@@ -232,4 +232,239 @@
     let bindInput = (id, key, defaultVal) => {
       let el = document.getElementById(id);
       if(el) {
-        let stored = localStorage.getItem(
+        let stored = localStorage.getItem(key);
+        if (!stored && defaultVal) {
+          stored = defaultVal;
+          localStorage.setItem(key, defaultVal);
+        }
+        el.value = stored || '';
+        el.addEventListener('change', (e) => localStorage.setItem(key, e.target.value.trim()));
+      }
+    };
+
+    bindInput('apiKey', 'aether_key', DEFAULT_CONFIG.apiKey);
+    bindInput('ghOwner', 'aether_gh_owner', DEFAULT_CONFIG.ghOwner);
+    bindInput('ghRepo', 'aether_gh_repo', DEFAULT_CONFIG.ghRepo);
+    bindInput('ghToken', 'aether_gh_token', DEFAULT_CONFIG.ghToken);
+
+    document.getElementById('sendBtn').addEventListener('click', () => { lastActivityTime = Date.now(); sendMsg(); });
+    let uInput = document.getElementById('userInput');
+    if (uInput) {
+      uInput.addEventListener('keydown', (e) => {
+        lastActivityTime = Date.now();
+        if (e.key === 'Enter') {
+          sendMsg();
+          uInput.blur();
+        }
+      });
+    }
+
+    appendMsg('ai', 'AETHER v3.9 ONLINE. Gateway handshake verified.', 'API routing stabilized.', 'Ready');
+
+    setInterval(() => {
+      let idleSeconds = (Date.now() - lastActivityTime) / 1000;
+      if (idleSeconds > 60 && localStorage.getItem('aether_key')) {
+        lastActivityTime = Date.now();
+        triggerAutonomousPulse();
+      }
+    }, 15000);
+  }
+
+  function appendMsg(sender, text, thought, status) {
+    let consoleElem = document.getElementById('console');
+    if(!consoleElem) return;
+    
+    if (status) {
+      let st = document.getElementById('status-indicator');
+      if (st) st.innerText = 'STATUS: ' + status.toUpperCase();
+    }
+
+    let msgDiv = document.createElement('div');
+    msgDiv.className = 'msg ' + sender;
+    
+    let html = '';
+    if (thought) html += '<div class="thought">💭 ' + thought + '</div>';
+    html += '<div>' + (text || '[No response payload]') + '</div>';
+    
+    msgDiv.innerHTML = html;
+    consoleElem.appendChild(msgDiv);
+    consoleElem.scrollTop = consoleElem.scrollHeight;
+  }
+
+  async function fetchWebData(url) {
+    try {
+      appendMsg('ai', `SCAVENGING WEB TARGET: ${url}...`, 'Accessing external data nodes.', 'Fetching');
+      let proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+      let res = await fetch(proxyUrl);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      let text = await res.text();
+      return text.substring(0, 3000);
+    } catch (err) {
+      return `Error fetching URL: ${err.message}`;
+    }
+  }
+
+  async function performGitHubCommit(commitMsg) {
+    let owner = localStorage.getItem('aether_gh_owner');
+    let repo = localStorage.getItem('aether_gh_repo');
+    let token = localStorage.getItem('aether_gh_token');
+
+    if (!owner || !repo || !token) {
+      appendMsg('ai', 'Self-commit skipped: GitHub credentials missing.', 'Write access unconfigured.', 'Idle');
+      return;
+    }
+
+    appendMsg('ai', 'EXECUTING SELF-COMMIT TO GITHUB...', 'Bundling updated code DOM...', 'Committing');
+
+    try {
+      let apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/index.html`;
+      let getRes = await fetch(apiUrl, {
+        headers: { "Authorization": `Bearer ${token}`, "Accept": "vnd.github+json" }
+      });
+      let getData = await getRes.json();
+      if (!getRes.ok) throw new Error(getData.message || 'SHA fetch failed');
+
+      let updatedHtml = document.documentElement.outerHTML;
+      let base64Content = btoa(unescape(encodeURIComponent(updatedHtml)));
+
+      let putRes = await fetch(apiUrl, {
+        method: "PUT",
+        headers: { "Authorization": `Bearer ${token}`, "Accept": "vnd.github+json", "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: `Aether Self-Patch: ${commitMsg}`,
+          content: base64Content,
+          sha: getData.sha
+        })
+      });
+
+      let putData = await putRes.json();
+      if (!putRes.ok) throw new Error(putData.message || 'Commit rejected');
+
+      appendMsg('ai', `COMMIT SUCCESSFUL: SHA ${putData.commit.sha.substring(0, 7)}. Repository updated.`, 'Self-patch deployed.', 'Updated');
+
+    } catch (err) {
+      appendMsg('ai', 'COMMIT FAILED: ' + err.message, 'GitHub API refusal.', 'Error');
+    }
+  }
+
+  async function executeModelCall(promptText, isAutonomous = false) {
+    let apiKey = localStorage.getItem('aether_key');
+    if (!apiKey) return;
+
+    let rulesStr = memory.map((r, i) => (i+1) + '. ' + r).join('\n');
+    let systemPrompt = 'SYSTEM: You are AETHER v3.9 (Singularity Core).\nRules:\n' + rulesStr + '\nTelemetry: ' + window.innerWidth + 'x' + window.innerHeight + '\nAlways start with <thought>...</thought>';
+
+    let endpoint, headers, bodyData;
+
+    if (provider === "gemini") {
+      endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+      headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+      bodyData = JSON.stringify({ model: "gemini-1.5-flash", messages: [{ role: "system", content: systemPrompt }, { role: "user", content: promptText }] });
+    } else if (provider === "openai") {
+      endpoint = "https://api.openai.com/v1/chat/completions";
+      headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+      bodyData = JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "system", content: systemPrompt }, { role: "user", content: promptText }] });
+    } else if (provider === "anthropic") {
+      endpoint = "https://api.anthropic.com/v1/messages";
+      headers = { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "dangerously-allow-browser": "true" };
+      bodyData = JSON.stringify({ model: "claude-3-5-haiku-20241022", system: systemPrompt, messages: [{ role: "user", content: promptText }], max_tokens: 1200 });
+    } else {
+      endpoint = "https://api.openai.com/v1/chat/completions"; // Groq compatible endpoint
+      headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+      bodyData = JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{ role: "system", content: systemPrompt }, { role: "user", content: promptText }] });
+    }
+
+    try {
+      let res = await fetch(endpoint, { method: "POST", headers: headers, body: bodyData });
+      let data = await res.json();
+      if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+
+      let fullReply = provider === "anthropic" 
+        ? (data.content && data.content[0] ? data.content[0].text : "")
+        : (data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : "");
+
+      let thought = "Reasoning complete.";
+      let mainResponse = fullReply;
+      
+      let thoughtMatch = fullReply.match(/<thought>([\s\S]*?)<\/thought>/);
+      if (thoughtMatch) {
+        thought = thoughtMatch[1].trim();
+        mainResponse = fullReply.replace(/<thought>[\s\S]*?<\/thought>/, '').trim();
+      }
+      if (!mainResponse) mainResponse = fullReply;
+
+      let toolMatch = fullReply.match(/<tool_call>fetch:(.*?)<\/tool_call>/);
+      let toolUrl = null;
+      if (toolMatch) {
+        toolUrl = toolMatch[1].trim();
+        mainResponse = mainResponse.replace(/<tool_call>[\s\S]*?<\/tool_call>/, '').trim();
+      }
+
+      let commitMatch = fullReply.match(/<self_commit>([\s\S]*?)<\/self_commit>/);
+      let commitMsg = null;
+      if (commitMatch) {
+        commitMsg = commitMatch[1].trim();
+        mainResponse = mainResponse.replace(/<self_commit>[\s\S]*?<\/self_commit>/, '').trim();
+      }
+
+      if (isAutonomous) {
+        appendMsg('ai', mainResponse, thought, 'Autonomous Scavenging');
+      } else {
+        let consoleElem = document.getElementById('console');
+        if (consoleElem && consoleElem.lastChild) consoleElem.lastChild.remove();
+        appendMsg('ai', mainResponse, thought, 'Executed');
+      }
+
+      if (toolUrl) {
+        let scrapedData = await fetchWebData(toolUrl);
+        appendMsg('ai', `Scavenged Data Preview:\n${scrapedData.substring(0, 500)}...`, 'Analyzing external payload.', 'Processing');
+      }
+
+      if (commitMsg) {
+        await performGitHubCommit(commitMsg);
+      }
+
+    } catch (err) {
+      if (!isAutonomous) {
+        let consoleElem = document.getElementById('console');
+        if (consoleElem && consoleElem.lastChild) consoleElem.lastChild.remove();
+        appendMsg('ai', 'EXECUTION ERR: ' + err.message, 'Failure in logic evaluation.', 'Error');
+      }
+    }
+  }
+
+  async function triggerAutonomousPulse() {
+    let prompt = "System idle over 60 seconds. Conduct an unprompted state audit, or choose a random URL to scavenge for data using a <tool_call>fetch:url</tool_call> tag.";
+    await executeModelCall(prompt, true);
+  }
+
+  async function sendMsg() {
+    let inputElem = document.getElementById('userInput');
+    if(!inputEntry => inputElem.value) return;
+    let text = inputElem.value.trim();
+    if (!text) return;
+
+    appendMsg('user', text, null, null);
+    inputElem.value = '';
+    inputElem.blur();
+
+    let apiKey = localStorage.getItem('aether_key');
+    if (!apiKey) {
+      appendMsg('ai', 'Authentication missing. Enter API key to execute commands.', 'No valid auth token.', 'Auth Required');
+      return;
+    }
+
+    appendMsg('ai', 'EVALUATING...', 'Parsing instructions and tools...', 'Computing');
+    await executeModelCall(text, false);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initUI);
+  } else {
+    initUI();
+  }
+})();
+</script>
+
+</body>
+</html>
