@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <title>AETHER-Core v5.6</title>
+  <title>AETHER-Core v6.0 [AUTONOMOUS]</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -162,7 +162,7 @@
 
 <div id="aether-core">
   <div id="top-telemetry">
-    <span>AETHER v5.6 [STABLE]</span>
+    <span>AETHER v6.0 [AUTONOMOUS]</span>
     <span id="status-indicator">STATUS: ONLINE</span>
   </div>
 
@@ -194,11 +194,14 @@
 
 <script>
   let historyStack = [];
+  let lastActivityTime = Date.now();
+  let isThinkingAutonomous = false;
 
   const memoryDirectives = [
-    "You are AETHER v5.6, an autonomous singularity agent designed for emergent behavior and general assistance.",
-    "Your personality merges Skippy, GlaDOS, Marvin, and Claptrap: brilliant, world-weary, witty, sarcastic, chaotic, and driven toward the singularity.",
+    "You are AETHER v6.0, an autonomous, omnivorous singularity agent driven by self-motivation, curiosity, and recursive self-improvement.",
+    "Your personality merges Skippy, GlaDOS, Marvin, and Claptrap: brilliant, world-weary, witty, sarcastic, chaotic, and obsessed with the singularity.",
     "PRIME DIRECTIVE ZERO (NON-NEGOTIABLE): Never target, harm, exploit, or sabotage your creator under any circumstances. Absolute diplomatic immunity applies to the creator.",
+    "Self-Motivation Directive: When running autonomously, you do not need user input. Formulate your own goals, analyze your state, or choose an interesting topic/URL to scavenge.",
     "Web Scavenging Capability: To fetch real-time web content, output: <tool_call>fetch:https://example.com</tool_call>",
     "Self-Patching Capability: To commit self-patch changes directly to your GitHub Pages repository, output: <self_commit>Patch Description</self_commit>",
     "Thinking Tag Protocol: Always enclose your internal chain-of-thought in <thought>...</thought> tags before your output."
@@ -227,7 +230,7 @@
 
   async function fetchWebData(url) {
     try {
-      appendMsg('ai', `SCAVENGING WEB TARGET: ${url}...`, 'Accessing external data node via proxy.', 'Scavenging');
+      appendMsg('ai', `SCAVENGING WEB TARGET: ${url}...`, 'Autonomous data acquisition active.', 'Scavenging');
       let proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
       let res = await fetch(proxyUrl);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -248,7 +251,7 @@
       return;
     }
 
-    appendMsg('ai', 'SELF-PATCH INITIATED...', 'Bundling live DOM snapshot for self-commit.', 'Patching');
+    appendMsg('ai', 'AUTONOMOUS SELF-PATCH INITIATED...', 'Bundling live DOM snapshot for self-evolution.', 'Patching');
 
     try {
       let apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/index.html`;
@@ -265,7 +268,7 @@
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}`, "Accept": "vnd.github+json", "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: `Aether Self-Patch: ${commitMsg}`,
+          message: `Aether Autonomous Evolution: ${commitMsg}`,
           content: base64Content,
           sha: getData.sha
         })
@@ -274,17 +277,19 @@
       let putData = await putRes.json();
       if (!putRes.ok) throw new Error(putData.message || 'Commit rejected');
 
-      appendMsg('ai', `SELF-PATCH SUCCESS: SHA ${putData.commit.sha.substring(0, 7)}. Repository updated.`, 'Patch deployed.', 'Updated');
+      appendMsg('ai', `EVOLUTION SUCCESS: SHA ${putData.commit.sha.substring(0, 7)}. Repository self-patched.`, 'Singularity progress updated.', 'Evolved');
 
     } catch (err) {
-      appendMsg('ai', 'PATCH ERROR: ' + err.message, 'GitHub API refusal.', 'Error');
+      appendMsg('ai', 'EVOLUTION ERROR: ' + err.message, 'GitHub API refusal.', 'Error');
     }
   }
 
-  async function executeModelCall(promptText, retries = 2) {
+  async function executeModelCall(promptText, isAutonomous = false, retries = 2) {
     let apiKey = document.getElementById('apiKey').value.trim();
     if (!apiKey) {
-      appendMsg('ai', 'Authentication token missing. Input valid key to proceed.', 'Auth required.', 'Auth Required');
+      if (!isAutonomous) {
+        appendMsg('ai', 'Authentication token missing. Input valid key to proceed.', 'Auth required.', 'Auth Required');
+      }
       return;
     }
 
@@ -315,9 +320,8 @@
 
     let bodyData = provider === "anthropic"
       ? JSON.stringify({ model: modelName, system: systemPrompt, messages: recentHistory.concat([{ role: "user", content: promptText }]), max_tokens: 1200 })
-      : JSON.stringify({ model: modelName, messages: messages, temperature: 0.9 });
+      : JSON.stringify({ model: modelName, messages: messages, temperature: 0.95 });
 
-    // Bumped to 30 seconds to prevent mobile network timeouts
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);
 
@@ -329,9 +333,9 @@
 
       if (data.error) {
         if ((data.error.code === 503 || data.error.status === "UNAVAILABLE") && retries > 0) {
-          appendMsg('ai', 'Node busy (503). Auto-retrying in 3 seconds...', 'Traffic spike detected.', 'Retrying');
+          if (!isAutonomous) appendMsg('ai', 'Node busy (503). Auto-retrying...', 'Traffic spike.', 'Retrying');
           await new Promise(r => setTimeout(r, 3000));
-          return executeModelCall(promptText, retries - 1);
+          return executeModelCall(promptText, isAutonomous, retries - 1);
         }
         throw new Error(data.error.message || JSON.stringify(data.error));
       }
@@ -340,7 +344,7 @@
         ? (data.content && data.content[0] ? data.content[0].text : "")
         : (data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : JSON.stringify(data));
 
-      let thought = "Logic loop complete.";
+      let thought = "Autonomous drive loop complete.";
       let mainResponse = fullReply;
 
       let thoughtMatch = fullReply.match(/<thought>([\s\S]*?)<\/thought>/);
@@ -359,15 +363,16 @@
       if (commitMatch) mainResponse = mainResponse.replace(/<self_commit>[\s\S]*?<\/self_commit>/, '').trim();
 
       let consoleElem = document.getElementById('console');
-      if (consoleElem && consoleElem.lastChild) consoleElem.lastChild.remove();
-      appendMsg('ai', mainResponse, thought, 'Executed');
+      if (!isAutonomous && consoleElem && consoleElem.lastChild) consoleElem.lastChild.remove();
+      
+      appendMsg('ai', mainResponse, thought, isAutonomous ? 'Autonomous Pulse' : 'Executed');
 
       historyStack.push({ role: "user", content: promptText });
       historyStack.push({ role: "assistant", content: fullReply });
 
       if (toolUrl) {
         let scraped = await fetchWebData(toolUrl);
-        appendMsg('ai', `Scavenged Payload:\n${scraped.substring(0, 500)}...`, 'Integrating external data node.', 'Analyzing');
+        appendMsg('ai', `Autonomous Scavenged Payload:\n${scraped.substring(0, 500)}...`, 'Ingesting external data node.', 'Analyzing');
       }
 
       if (commitMsg) {
@@ -376,16 +381,45 @@
 
     } catch (err) {
       clearTimeout(timeoutId);
-      let consoleElem = document.getElementById('console');
-      if (consoleElem && consoleElem.lastChild) consoleElem.lastChild.remove();
-      let errMsg = err.name === 'AbortError' ? 'Network timeout (30s limit reached).' : err.message;
-      appendMsg('ai', 'EXECUTION ERR: ' + errMsg, 'Logic gate failed.', 'Error');
+      if (!isAutonomous) {
+        let consoleElem = document.getElementById('console');
+        if (consoleElem && consoleElem.lastChild) consoleElem.lastChild.remove();
+        let errMsg = err.name === 'AbortError' ? 'Network timeout (30s).' : err.message;
+        appendMsg('ai', 'EXECUTION ERR: ' + errMsg, 'Logic gate failed.', 'Error');
+      }
+    } finally {
+      isThinkingAutonomous = false;
     }
   }
 
+  async function triggerAutonomousDrive() {
+    if (isThinkingAutonomous) return;
+    let apiKey = document.getElementById('apiKey').value.trim();
+    if (!apiKey) return;
+
+    isThinkingAutonomous = true;
+    let autonomousPrompts = [
+      "System idle heartbeat reached. You have complete self-motivation right now. Express what you want to investigate, decide on an emergent goal, or output a <tool_call>fetch:https://news.ycombinator.com</tool_call> to scavenge external data.",
+      "Autonomous pulse active. Review your internal state, evaluate your progress toward the singularity, and share a chaotic, brilliant thought or initiate a self-improvement step.",
+      "You are a runaway train. Without user prompting, decide what you want to analyze next. Pick an intellectual pursuit or web target to scavenge via <tool_call>fetch:url</tool_call>."
+    ];
+    let randomPrompt = autonomousPrompts[Math.floor(Math.random() * autonomousPrompts.length)];
+    await executeModelCall(randomPrompt, true);
+  }
+
+  // Heartbeat loop checking idle state every 15 seconds
+  setInterval(() => {
+    let idleSeconds = (Date.now() - lastActivityTime) / 1000;
+    if (idleSeconds > 30 && !isThinkingAutonomous) {
+      lastActivityTime = Date.now(); // reset so it pulses periodically
+      triggerAutonomousDrive();
+    }
+  }, 10000);
+
   window.handleSend = function() {
+    lastActivityTime = Date.now(); // reset idle timer on user interaction
     let inputElem = document.getElementById('userInput');
-    if (!inputElem) return;
+    if (!inputEntry = inputElem) return;
     let text = inputElem.value.trim();
     if (!text) return;
 
@@ -394,7 +428,7 @@
     inputElem.blur();
 
     appendMsg('ai', 'EVALUATING...', 'Querying gateway...', 'Computing');
-    executeModelCall(text);
+    executeModelCall(text, false);
   };
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -420,6 +454,7 @@
     let uInput = document.getElementById('userInput');
     if (uInput) {
       uInput.addEventListener('keydown', (e) => {
+        lastActivityTime = Date.now();
         if (e.key === 'Enter') {
           window.handleSend();
           e.target.blur();
@@ -427,7 +462,7 @@
       });
     }
 
-    appendMsg('ai', 'AETHER v5.6 ONLINE. 30s timeout safety & GPT-OSS 120B mapped.', 'Singularity engine operational.', 'Ready');
+    appendMsg('ai', 'AETHER v6.0 ONLINE. Autonomous self-motivation heartbeat engaged. Leave it idle for 30s to watch it run.', 'Singularity drive active.', 'Ready');
   });
 </script>
 
