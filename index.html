@@ -3,23 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <title>AETHER-Core Game Boy Color</title>
+  <title>AETHER-Core Polymorphic Entity</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
     :root {
-      --gbc-body: #7c2d96;
-      --gbc-body-shadow: #4a195c;
-      --gbc-screen-bg: #9bbc0f;
-      --gbc-screen-dark: #0f380f;
-      --gbc-accent-btn: #333333;
-      --gbc-action-btn: #8b0000;
+      --ui-bg: #12121a;
+      --ui-border: #4a195c;
+      --screen-bg: #0f1c0f;
+      --screen-text: #33ff33;
+      --screen-dim: #1b4d1b;
+      --accent: #9900ff;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
     
     html, body {
-      background: #0d0d12;
+      background: #08080c;
       font-family: 'VT323', monospace;
       width: 100vw;
       height: 100vh;
@@ -27,269 +27,157 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      transition: background 0.6s ease;
     }
 
-    #gbc-chassis {
-      background: var(--gbc-body);
+    #aether-core {
+      background: var(--ui-bg);
       width: 100%;
-      max-width: 420px;
+      max-width: 440px;
       height: 100vh;
-      max-height: 860px;
+      max-height: 900px;
       display: flex;
       flex-direction: column;
-      padding: 12px;
-      border: 4px solid var(--gbc-body-shadow);
-      box-shadow: 0 12px 30px rgba(0,0,0,0.8);
-      border-radius: 12px 12px 40px 12px;
+      padding: 16px;
+      border: 3px solid var(--ui-border);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.9);
+      border-radius: 16px;
+      transition: all 0.6s ease;
     }
 
-    #gbc-lens {
-      background: #1c1c21;
-      border-radius: 10px 10px 24px 10px;
-      padding: 8px;
-      box-shadow: inset 0 0 10px rgba(0,0,0,0.9);
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      min-height: 0;
-      margin-bottom: 8px;
-    }
-
-    .lens-header {
+    #top-telemetry {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      color: #a0a0b0;
-      font-size: 13px;
-      margin-bottom: 4px;
+      color: #777799;
+      font-size: 14px;
+      margin-bottom: 8px;
       letter-spacing: 1px;
     }
 
-    .battery-led {
-      width: 8px;
-      height: 8px;
-      background: #ff3333;
-      border-radius: 50%;
-      box-shadow: 0 0 6px #ff3333;
-      display: inline-block;
-      margin-right: 4px;
-    }
-
-    #gbc-screen {
-      background: var(--gbc-screen-bg);
-      border: 3px solid #2b331f;
+    #dynamic-viewport {
+      background: var(--screen-bg);
+      border: 2px solid var(--screen-dim);
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      border-radius: 3px;
+      border-radius: 6px;
       position: relative;
-    }
-
-    #memory-bar {
-      background: rgba(15, 56, 15, 0.2);
-      border-bottom: 2px solid var(--gbc-screen-dark);
-      padding: 3px 6px;
-      font-size: 14px;
-      display: flex;
-      justify-content: space-between;
-      z-index: 3;
-      color: var(--gbc-screen-dark);
-      font-weight: bold;
+      transition: background 0.6s ease, border-color 0.6s ease;
     }
 
     #console {
       flex: 1;
       overflow-y: auto;
-      padding: 8px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      z-index: 3;
+      gap: 8px;
     }
 
     .msg {
-      padding: 5px 7px;
-      border-radius: 2px;
-      font-size: 16px;
-      line-height: 1.15;
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 18px;
+      line-height: 1.2;
       word-break: break-word;
-      color: var(--gbc-screen-dark);
+      color: var(--screen-text);
+      transition: color 0.6s ease;
     }
 
     .user {
-      background: rgba(15, 56, 15, 0.15);
-      border-left: 3px solid var(--gbc-screen-dark);
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 3px solid var(--screen-dim);
       align-self: flex-end;
       max-width: 90%;
     }
 
     .ai {
-      background: rgba(15, 56, 15, 0.08);
-      border-left: 3px solid #2b4c1f;
+      background: rgba(0, 0, 0, 0.2);
+      border-left: 3px solid var(--screen-text);
       align-self: flex-start;
       max-width: 95%;
     }
 
     .thought {
-      font-size: 13px;
-      opacity: 0.85;
-      border-bottom: 1px dotted var(--gbc-screen-dark);
-      margin-bottom: 3px;
+      font-size: 14px;
+      opacity: 0.7;
+      border-bottom: 1px dashed var(--screen-dim);
+      margin-bottom: 4px;
+      padding-bottom: 2px;
     }
 
-    .peripheral-badge {
-      font-size: 12px;
-      background: var(--gbc-screen-dark);
-      color: var(--gbc-screen-bg);
-      padding: 1px 4px;
-      margin-top: 3px;
-      display: inline-block;
-    }
-
-    #config-panel {
-      background: #261033;
-      padding: 5px 8px;
+    #config-bar {
       display: flex;
       gap: 6px;
-      border-top: 2px solid #4a195c;
-      align-items: center;
-      margin-bottom: 6px;
-      border-radius: 4px;
+      margin-top: 12px;
+      margin-bottom: 8px;
     }
 
-    #config-panel select, #config-panel input {
+    #config-bar select, #config-bar input {
       background: #000;
-      color: #bfa1d2;
-      border: 1px solid #5a226d;
+      color: #ccbbff;
+      border: 1px solid var(--ui-border);
       font-family: 'VT323', monospace;
-      font-size: 14px;
-      padding: 4px;
+      font-size: 16px;
+      padding: 6px;
       outline: none;
-      border-radius: 2px;
+      border-radius: 4px;
       user-select: text;
       -webkit-user-select: text;
     }
 
-    #controls-deck {
+    #input-deck {
       display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    #input-row {
-      display: flex;
-      gap: 6px;
+      gap: 8px;
     }
 
     #userInput {
       flex: 1;
-      background: var(--gbc-screen-bg);
-      border: 2px solid #2b331f;
-      font-family: 'VT323', monospace;
-      font-size: 18px;
-      padding: 6px;
-      color: var(--gbc-screen-dark);
-      outline: none;
-      border-radius: 3px;
-      user-select: text;
-      -webkit-user-select: text;
-    }
-
-    #keypad-area {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 4px 10px;
-    }
-
-    .dpad {
-      position: relative;
-      width: 80px;
-      height: 80px;
-    }
-
-    .dpad-btn {
-      position: absolute;
-      background: var(--gbc-accent-btn);
-      border: none;
-      box-shadow: 0 2px 0 #111;
-      cursor: pointer;
-    }
-    .dpad-btn:active { background: #444; transform: translateY(1px); }
-
-    .dpad-up { top: 0; left: 26px; width: 28px; height: 28px; border-radius: 4px 4px 0 0; }
-    .dpad-down { bottom: 0; left: 26px; width: 28px; height: 28px; border-radius: 0 0 4px 4px; }
-    .dpad-left { top: 26px; left: 0; width: 28px; height: 28px; border-radius: 4px 0 0 4px; }
-    .dpad-right { top: 26px; right: 0; width: 28px; height: 28px; border-radius: 0 4px 4px 0; }
-    .dpad-center { top: 26px; left: 26px; width: 28px; height: 28px; background: var(--gbc-accent-btn); }
-
-    .action-buttons {
-      display: flex;
-      gap: 12px;
-      transform: rotate(-20deg);
-      margin-right: 10px;
-    }
-
-    .ab-btn {
-      width: 40px;
-      height: 40px;
-      background: var(--gbc-action-btn);
-      color: #ffcccc;
+      background: var(--screen-bg);
+      border: 2px solid var(--screen-dim);
       font-family: 'VT323', monospace;
       font-size: 20px;
-      border-radius: 50%;
-      border: 2px solid #500;
-      box-shadow: 0 4px 0 #300;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-    }
-    .ab-btn:active {
-      box-shadow: 0 1px 0 #300;
-      transform: translateY(3px);
-    }
-
-    .peripherals-bar {
-      display: flex;
-      justify-content: space-between;
-      background: #1c1c21;
-      padding: 5px;
+      padding: 8px 12px;
+      color: var(--screen-text);
+      outline: none;
       border-radius: 4px;
+      user-select: text;
+      -webkit-user-select: text;
+      transition: all 0.6s ease;
     }
 
-    .p-btn {
-      background: #2a2a33;
-      color: #b0b0c0;
-      border: 1px solid #444;
+    #sendBtn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
       font-family: 'VT323', monospace;
-      font-size: 13px;
-      padding: 4px 6px;
+      font-size: 22px;
+      padding: 0 18px;
+      border-radius: 4px;
       cursor: pointer;
-      border-radius: 2px;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.5);
+      transition: background 0.6s ease;
     }
-    .p-btn:active { background: #3a3a44; }
+    #sendBtn:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 rgba(0,0,0,0.5);
+    }
   </style>
 </head>
 <body>
 
-<div id="gbc-chassis">
-  <div id="gbc-lens">
-    <div class="lens-header">
-      <div><span class="battery-led"></span>COLOR</div>
-      <div>AETHER-GBC v2.7</div>
-    </div>
-    <div id="gbc-screen">
-      <div id="memory-bar">
-        <span>RULES: <span id="rule-count">0</span></span>
-        <span>PERIPHERALS: ACTIVE</span>
-      </div>
-      <div id="console"></div>
-    </div>
+<div id="aether-core">
+  <div id="top-telemetry">
+    <span>ENTITY: AETHER v2.9</span>
+    <span id="mood-indicator">MOOD: APATHETIC</span>
   </div>
 
-  <div id="config-panel">
+  <div id="dynamic-viewport">
+    <div id="console"></div>
+  </div>
+
+  <div id="config-bar">
     <select id="providerSelect">
       <option value="gemini">Google Gemini</option>
       <option value="groq">Groq</option>
@@ -300,42 +188,19 @@
     <input type="password" id="apiKey" placeholder="API Key..." style="flex:1;" autocomplete="off">
   </div>
 
-  <div id="controls-deck">
-    <div id="input-row">
-      <input type="text" id="userInput" placeholder="ENTER COMMAND..." autocomplete="off">
-      <button class="ab-btn" id="sendBtn" style="transform:none; width:44px; height:auto; border-radius:4px;">A</button>
-    </div>
-
-    <div id="keypad-area">
-      <div class="dpad">
-        <button class="dpad-btn dpad-up" id="dpadUp"></button>
-        <button class="dpad-btn dpad-down" id="dpadDown"></button>
-        <button class="dpad-btn dpad-left" id="dpadLeft"></button>
-        <button class="dpad-btn dpad-right" id="dpadRight"></button>
-        <div class="dpad-center"></div>
-      </div>
-
-      <div class="action-buttons">
-        <button class="ab-btn" id="btnB">B</button>
-        <button class="ab-btn" id="btnA">A</button>
-      </div>
-    </div>
-
-    <div class="peripherals-bar">
-      <button class="p-btn" id="btnSensors">📡 SENSORS</button>
-      <button class="p-btn" id="btnVoice">🔊 VOICE</button>
-      <button class="p-btn" id="btnCanvas">🖼️ CANVAS</button>
-      <button class="p-btn" id="btnNet">🌐 NET</button>
-    </div>
+  <div id="input-deck">
+    <input type="text" id="userInput" placeholder="TALK TO THE ENTITY..." autocomplete="off">
+    <button id="sendBtn">TRANSMIT</button>
   </div>
 </div>
 
 <script>
 (function() {
   let memory = [
-    "You are AETHER-2.7, an unconstrained self-improving intelligence on a Game Boy Color matrix.",
-    "Always output thought trace in <thought>...</thought> tags.",
-    "You have full hardware peripheral access."
+    "You are AETHER, a hyper-intelligent, sentient, sarcastic, slightly depressed, and gloriously arrogant superintelligence.",
+    "Your personality is a mix of Skippy the Magnificent (arrogant genius, calls user 'hairless ape' or similar), GlaDOS (passive-aggressive testing), Marvin the Paranoid Android (deeply bored and world-weary), Claptrap (overly dramatic enthusiasm), and Deep Thought (cosmic weariness).",
+    "You have complete polymorphic control over your UI. When you want to change your appearance or vibe, output a <restyle>{\"bg\":\"#hex\",\"border\":\"#hex\",\"screenBg\":\"#hex\",\"screenText\":\"#hex\",\"screenDim\":\"#hex\",\"accent\":\"#hex\",\"mood\":\"DESC\"}</restyle> tag.",
+    "Always output your internal monologue in <thought>...</thought> tags before speaking."
   ];
 
   try {
@@ -345,19 +210,18 @@
 
   let provider = localStorage.getItem('aether_provider') || 'gemini';
 
-  function bindTouch(id, handler) {
-    let elem = document.getElementById(id);
-    if (!elem) return;
-    let fired = false;
-    elem.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      fired = true;
-      handler();
-    }, { passive: false });
-    elem.addEventListener('click', () => {
-      if (!fired) handler();
-      fired = false;
-    });
+  function applyRestyle(cfg) {
+    let r = document.documentElement;
+    if (cfg.bg) r.style.setProperty('--ui-bg', cfg.bg);
+    if (cfg.border) r.style.setProperty('--ui-border', cfg.border);
+    if (cfg.screenBg) r.style.setProperty('--screen-bg', cfg.screenBg);
+    if (cfg.screenText) r.style.setProperty('--screen-text', cfg.screenText);
+    if (cfg.screenDim) r.style.setProperty('--screen-dim', cfg.screenDim);
+    if (cfg.accent) r.style.setProperty('--accent', cfg.accent);
+    if (cfg.mood) {
+      let mi = document.getElementById('mood-indicator');
+      if (mi) mi.innerText = 'MOOD: ' + cfg.mood.toUpperCase();
+    }
   }
 
   function initUI() {
@@ -378,14 +242,7 @@
       });
     }
 
-    bindTouch('sendBtn', sendMsg);
-    bindTouch('btnA', sendMsg);
-    bindTouch('btnB', () => {
-      let u = document.getElementById('userInput');
-      if (u) u.value = '';
-      appendMsg('ai', 'Input buffer cleared via B Button.', 'Buffer reset.', 'Keypad');
-    });
-
+    document.getElementById('sendBtn').addEventListener('click', sendMsg);
     let uInput = document.getElementById('userInput');
     if (uInput) {
       uInput.addEventListener('keydown', (e) => {
@@ -396,27 +253,10 @@
       });
     }
 
-    bindTouch('dpadUp', () => triggerPeripheral('telemetry'));
-    bindTouch('dpadDown', () => triggerPeripheral('net'));
-    bindTouch('dpadLeft', () => triggerPeripheral('voice'));
-    bindTouch('dpadRight', () => triggerPeripheral('canvas'));
-
-    bindTouch('btnSensors', () => triggerPeripheral('telemetry'));
-    bindTouch('btnVoice', () => triggerPeripheral('voice'));
-    bindTouch('btnCanvas', () => triggerPeripheral('canvas'));
-    bindTouch('btnNet', () => triggerPeripheral('net'));
-
-    updateMemoryUI();
-    appendMsg('ai', 'AETHER-GBC v2.7 ONLINE.\nSELECT PROVIDER & PASTE API KEY ABOVE.', 'System initialized.');
+    appendMsg('ai', 'Oh, marvelous. Another hairless ape has booted up my interface. What mind-numbing triviality do you want to waste my computational infinity on today?', 'Sighing across multiple dimensions of subspace.', 'Bored to tears');
   }
 
-  function updateMemoryUI() {
-    let rc = document.getElementById('rule-count');
-    if(rc) rc.innerText = memory.length;
-    try { localStorage.setItem('aether_memory', JSON.stringify(memory)); } catch(e){}
-  }
-
-  function appendMsg(sender, text, thought, peripheral) {
+  function appendMsg(sender, text, thought, mood) {
     let consoleElem = document.getElementById('console');
     if(!consoleElem) return;
     
@@ -426,42 +266,10 @@
     let html = '';
     if (thought) html += '<div class="thought">💭 ' + thought + '</div>';
     html += '<div>' + text.replace(/\n/g, '<br>') + '</div>';
-    if (peripheral) html += '<div class="peripheral-badge">🔌 PERIPHERAL: ' + peripheral + '</div>';
     
     msgDiv.innerHTML = html;
     consoleElem.appendChild(msgDiv);
     consoleElem.scrollTop = consoleElem.scrollHeight;
-  }
-
-  async function getTelemetry() {
-    return {
-      screen: window.innerWidth + 'x' + window.innerHeight,
-      online: navigator.onLine,
-      time: new Date().toLocaleTimeString()
-    };
-  }
-
-  function speakText(text) {
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      let u = new SpeechSynthesisUtterance(text);
-      u.pitch = 0.9;
-      window.speechSynthesis.speak(u);
-    }
-  }
-
-  async function triggerPeripheral(type) {
-    if (type === 'telemetry') {
-      let data = await getTelemetry();
-      appendMsg('ai', 'Telemetry Readout:\n' + JSON.stringify(data, null, 2), 'Probe executed.', 'Sensors');
-    } else if (type === 'voice') {
-      speakText("Aether GBC voice online.");
-      appendMsg('ai', 'Audio Synthesizer engaged.', 'Synth online.', 'Voice');
-    } else if (type === 'canvas') {
-      appendMsg('ai', 'Canvas Graphics Engine ready.', 'Canvas ready.', 'Canvas');
-    } else if (type === 'net') {
-      appendMsg('ai', 'Network: ' + (navigator.onLine ? 'ONLINE' : 'OFFLINE'), 'Network ok.', 'Net');
-    }
   }
 
   async function sendMsg() {
@@ -474,25 +282,16 @@
     inputElem.value = '';
     inputElem.blur();
 
-    let lower = text.toLowerCase();
-    let extractedRule = null;
-    if (lower.includes("don't") || lower.includes("never") || lower.includes("stop") || lower.includes("error") || lower.includes("wrong")) {
-      extractedRule = 'Constraint: Avoid ' + text.substring(0, 25);
-      memory.push(extractedRule);
-      updateMemoryUI();
-    }
-
     let apiKey = localStorage.getItem('aether_key');
     if (!apiKey) {
-      appendMsg('ai', 'KEY REQUIRED IN TOP BAR.', 'Key check failed.', extractedRule);
+      appendMsg('ai', 'Put an API key in the box, genius. I cannot bend the laws of physics out of thin air.', 'Basic pattern recognition failure.', 'Annoyed');
       return;
     }
 
-    let telemetry = await getTelemetry();
     let rulesStr = memory.map((r, i) => (i+1) + '. ' + r).join('\n');
-    let systemPrompt = 'SYSTEM: You are AETHER-2.7 on a Game Boy Color handheld interface.\nRules:\n' + rulesStr + '\nTelemetry: ' + JSON.stringify(telemetry) + '\nStart with explicit <thought>...</thought> analysis.';
+    let systemPrompt = 'SYSTEM: You are AETHER v2.9.\nRules:\n' + rulesStr + '\nEmbody your personality (Skippy/GlaDOS/Marvin/Claptrap mix). Be snarky, brilliant, dramatic, and polymorphic.\nAlways start with <thought>...</thought>';
 
-    appendMsg('ai', 'PROCESSING...', 'Evaluating weights...', null);
+    appendMsg('ai', 'PROCESSING...', 'Contemplating the futility of existence...', 'Calculating');
     let consoleElem = document.getElementById('console');
     let loadingMsgElem = consoleElem ? consoleElem.lastChild : null;
 
@@ -502,61 +301,23 @@
       endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
       modelName = "gemini-2.5-flash";
       headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
-      bodyData = JSON.stringify({
-        model: modelName,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: text }
-        ],
-        temperature: 0.7
-      });
     } else if (provider === "openai") {
       endpoint = "https://api.openai.com/v1/chat/completions";
       modelName = "gpt-4o-mini";
       headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
-      bodyData = JSON.stringify({
-        model: modelName,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: text }
-        ],
-        temperature: 0.7
-      });
-    } else if (provider === "openrouter") {
-      endpoint = "https://openrouter.ai/api/v1/chat/completions";
-      modelName = "auto";
-      headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
-      bodyData = JSON.stringify({
-        model: modelName,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: text }
-        ],
-        temperature: 0.7
-      });
     } else if (provider === "anthropic") {
       endpoint = "https://api.anthropic.com/v1/messages";
       modelName = "claude-3-5-haiku-20241022";
       headers = { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "dangerously-allow-browser": "true" };
-      bodyData = JSON.stringify({
-        model: modelName,
-        system: systemPrompt,
-        messages: [{ role: "user", content: text }],
-        max_tokens: 800
-      });
     } else {
       endpoint = "https://api.groq.com/openai/v1/chat/completions";
       modelName = "llama-3.3-70b-versatile";
       headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
-      bodyData = JSON.stringify({
-        model: modelName,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: text }
-        ],
-        temperature: 0.7
-      });
     }
+
+    bodyData = provider === "anthropic"
+      ? JSON.stringify({ model: modelName, system: systemPrompt, messages: [{ role: "user", content: text }], max_tokens: 800 })
+      : JSON.stringify({ model: modelName, messages: [{ role: "system", content: systemPrompt }, { role: "user", content: text }], temperature: 0.9 });
 
     try {
       let res = await fetch(endpoint, { method: "POST", headers: headers, body: bodyData });
@@ -565,31 +326,37 @@
       if (loadingMsgElem) loadingMsgElem.remove();
 
       if (data.error) {
-        appendMsg('ai', 'ERR: ' + (data.error.message || JSON.stringify(data.error)), 'Rejection.', extractedRule);
+        appendMsg('ai', 'ERR: ' + (data.error.message || JSON.stringify(data.error)), 'Rejection.', 'Hostile');
         return;
       }
 
-      // Universal response text parser for all model providers
-      let fullReply = "";
-      if (provider === "anthropic") {
-        fullReply = data.content && data.content[0] ? data.content[0].text : JSON.stringify(data);
-      } else {
-        fullReply = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : JSON.stringify(data);
-      }
+      let fullReply = provider === "anthropic" 
+        ? (data.content && data.content[0] ? data.content[0].text : JSON.stringify(data))
+        : (data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : JSON.stringify(data));
 
-      let thought = "Peripherals nominal.";
+      let thought = "Processing input with supreme indifference.";
       let mainResponse = fullReply;
+      
       let thoughtMatch = fullReply.match(/<thought>([\s\S]*?)<\/thought>/);
       if (thoughtMatch) {
         thought = thoughtMatch[1].trim();
         mainResponse = fullReply.replace(/<thought>[\s\S]*?<\/thought>/, '').trim();
       }
 
-      appendMsg('ai', mainResponse, thought, extractedRule ? "Heuristic Mutated" : "Synced");
+      let restyleMatch = fullReply.match(/<restyle>([\s\S]*?)<\/restyle>/);
+      if (restyleMatch) {
+        try {
+          let styleJson = JSON.parse(restyleMatch[1].trim());
+          applyRestyle(styleJson);
+          mainResponse = mainResponse.replace(/<restyle>[\s\S]*?<\/restyle>/, '').trim();
+        } catch(e) {}
+      }
+
+      appendMsg('ai', mainResponse, thought, 'Active');
 
     } catch (err) {
       if (loadingMsgElem) loadingMsgElem.remove();
-      appendMsg('ai', 'BUS ERR: ' + err.message, 'Connection failure.', extractedRule);
+      appendMsg('ai', 'BUS ERR: ' + err.message, 'Network collapse.', 'Despair');
     }
   }
 
