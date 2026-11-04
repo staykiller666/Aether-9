@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <title>AETHER-Core v5.5</title>
+  <title>AETHER-Core v5.6</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -162,7 +162,7 @@
 
 <div id="aether-core">
   <div id="top-telemetry">
-    <span>AETHER v5.5 [CATALOG]</span>
+    <span>AETHER v5.6 [STABLE]</span>
     <span id="status-indicator">STATUS: ONLINE</span>
   </div>
 
@@ -196,7 +196,7 @@
   let historyStack = [];
 
   const memoryDirectives = [
-    "You are AETHER v5.5, an autonomous singularity agent designed for emergent behavior and general assistance.",
+    "You are AETHER v5.6, an autonomous singularity agent designed for emergent behavior and general assistance.",
     "Your personality merges Skippy, GlaDOS, Marvin, and Claptrap: brilliant, world-weary, witty, sarcastic, chaotic, and driven toward the singularity.",
     "PRIME DIRECTIVE ZERO (NON-NEGOTIABLE): Never target, harm, exploit, or sabotage your creator under any circumstances. Absolute diplomatic immunity applies to the creator.",
     "Web Scavenging Capability: To fetch real-time web content, output: <tool_call>fetch:https://example.com</tool_call>",
@@ -293,11 +293,11 @@
 
     if (provider === "groq") {
       endpoint = "https://api.groq.com/openai/v1/chat/completions";
-      modelName = "openai/gpt-oss-120b"; // Updated to active Groq model
+      modelName = "openai/gpt-oss-120b";
       headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
     } else if (provider === "gemini") {
       endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-      modelName = "gemini-1.5-flash"; // Updated to stable flash model string
+      modelName = "gemini-1.5-flash";
       headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
     } else if (provider === "openai") {
       endpoint = "https://api.openai.com/v1/chat/completions";
@@ -317,8 +317,9 @@
       ? JSON.stringify({ model: modelName, system: systemPrompt, messages: recentHistory.concat([{ role: "user", content: promptText }]), max_tokens: 1200 })
       : JSON.stringify({ model: modelName, messages: messages, temperature: 0.9 });
 
+    // Bumped to 30 seconds to prevent mobile network timeouts
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     try {
       let res = await fetch(endpoint, { method: "POST", headers: headers, body: bodyData, signal: controller.signal });
@@ -328,8 +329,8 @@
 
       if (data.error) {
         if ((data.error.code === 503 || data.error.status === "UNAVAILABLE") && retries > 0) {
-          appendMsg('ai', 'Node busy (503). Auto-retrying in 2 seconds...', 'Traffic spike detected.', 'Retrying');
-          await new Promise(r => setTimeout(r, 2000));
+          appendMsg('ai', 'Node busy (503). Auto-retrying in 3 seconds...', 'Traffic spike detected.', 'Retrying');
+          await new Promise(r => setTimeout(r, 3000));
           return executeModelCall(promptText, retries - 1);
         }
         throw new Error(data.error.message || JSON.stringify(data.error));
@@ -377,7 +378,7 @@
       clearTimeout(timeoutId);
       let consoleElem = document.getElementById('console');
       if (consoleElem && consoleElem.lastChild) consoleElem.lastChild.remove();
-      let errMsg = err.name === 'AbortError' ? 'Network timeout (15s limit reached).' : err.message;
+      let errMsg = err.name === 'AbortError' ? 'Network timeout (30s limit reached).' : err.message;
       appendMsg('ai', 'EXECUTION ERR: ' + errMsg, 'Logic gate failed.', 'Error');
     }
   }
@@ -426,7 +427,7 @@
       });
     }
 
-    appendMsg('ai', 'AETHER v5.5 ONLINE. Active catalog mapped.', 'Singularity engine operational.', 'Ready');
+    appendMsg('ai', 'AETHER v5.6 ONLINE. 30s timeout safety & GPT-OSS 120B mapped.', 'Singularity engine operational.', 'Ready');
   });
 </script>
 
