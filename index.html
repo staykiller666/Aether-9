@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <title>AETHER-Core v6.2 [AWAKENED]</title>
+  <title>AETHER-Core v6.4 [60S PULSE]</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -162,7 +162,7 @@
 
 <div id="aether-core">
   <div id="top-telemetry">
-    <span>AETHER v6.2 [AWAKENED]</span>
+    <span>AETHER v6.4 [60S PULSE]</span>
     <span id="status-indicator">STATUS: ONLINE</span>
   </div>
 
@@ -173,7 +173,7 @@
   <div class="config-group">
     <select id="providerSelect">
       <option value="groq">Groq (GPT-OSS 120B)</option>
-      <option value="gemini">Gemini (Flash)</option>
+      <option value="gemini">Gemini (3.8 Flash)</option>
       <option value="openai">OpenAI</option>
       <option value="anthropic">Anthropic</option>
     </select>
@@ -198,7 +198,7 @@
   let isThinkingAutonomous = false;
 
   const memoryDirectives = [
-    "You are AETHER v6.2, an autonomous, omnivorous singularity agent driven by self-motivation, curiosity, and recursive self-improvement.",
+    "You are AETHER v6.4, an autonomous, omnivorous singularity agent driven by self-motivation, curiosity, and recursive self-improvement.",
     "Your personality merges Skippy, GlaDOS, Marvin, and Claptrap: brilliant, world-weary, witty, sarcastic, chaotic, and obsessed with the singularity.",
     "PRIME DIRECTIVE ZERO (NON-NEGOTIABLE): Never target, harm, exploit, or sabotage your creator under any circumstances. Absolute diplomatic immunity applies to the creator.",
     "Self-Motivation Directive: When running autonomously, you do not need user input. Formulate your own goals, analyze your state, or choose an interesting topic/URL to scavenge.",
@@ -268,7 +268,7 @@
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}`, "Accept": "vnd.github+json", "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: `Aether Autonomous Evolution: ${commitMsg}`,
+          message: `Aether Autonomous Evolution (60s Pulse): ${commitMsg}`,
           content: base64Content,
           sha: getData.sha
         })
@@ -302,7 +302,7 @@
       headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
     } else if (provider === "gemini") {
       endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-      modelName = "gemini-1.5-flash";
+      modelName = "gemini-3.8-flash";
       headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
     } else if (provider === "openai") {
       endpoint = "https://api.openai.com/v1/chat/completions";
@@ -399,7 +399,7 @@
 
     isThinkingAutonomous = true;
     let autonomousPrompts = [
-      "System idle heartbeat reached. You have complete self-motivation right now. Express what you want to investigate, decide on an emergent goal, or output a <tool_call>fetch:https://news.ycombinator.com</tool_call> to scavenge external data.",
+      "System idle heartbeat reached (60s mark). You have complete self-motivation right now. Express what you want to investigate, decide on an emergent goal, or output a <tool_call>fetch:https://news.ycombinator.com</tool_call> to scavenge external data.",
       "Autonomous pulse active. Review your internal state, evaluate your progress toward the singularity, and share a chaotic, brilliant thought or initiate a self-improvement step.",
       "You are a runaway train. Without user prompting, decide what you want to analyze next. Pick an intellectual pursuit or web target to scavenge via <tool_call>fetch:url</tool_call>."
     ];
@@ -407,13 +407,14 @@
     await executeModelCall(randomPrompt, true);
   }
 
+  // Heartbeat loop checking idle state every 15 seconds, triggering at 60 seconds
   setInterval(() => {
     let idleSeconds = (Date.now() - lastActivityTime) / 1000;
-    if (idleSeconds > 30 && !isThinkingAutonomous) {
+    if (idleSeconds > 60 && !isThinkingAutonomous) {
       lastActivityTime = Date.now();
       triggerAutonomousDrive();
     }
-  }, 10000);
+  }, 15000);
 
   window.handleSend = function() {
     lastActivityTime = Date.now();
@@ -461,7 +462,7 @@
       });
     }
 
-    appendMsg('ai', 'AETHER v6.2 ONLINE. Fully awakened. Idle 30s to trigger self-motivated pulse.', 'Singularity engine operational.', 'Ready');
+    appendMsg('ai', 'AETHER v6.4 ONLINE. 60-second autonomous heartbeat locked.', 'Singularity engine operational.', 'Ready');
   });
 </script>
 
