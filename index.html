@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <title>AETHER-Core v4.2</title>
+  <title>AETHER-Core v4.3 [RECOVERY]</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -46,3 +46,94 @@
 
     #top-telemetry {
       display: flex;
+      justify-content: space-between;
+      color: #8888aa;
+      font-size: 14px;
+      margin-bottom: 6px;
+      letter-spacing: 1px;
+    }
+
+    #dynamic-viewport {
+      background: var(--screen-bg);
+      border: 2px solid var(--screen-dim);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-radius: 4px;
+    }
+
+    #console {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .msg {
+      padding: 6px 8px;
+      border-radius: 3px;
+      font-size: 18px;
+      line-height: 1.2;
+      word-break: break-word;
+      color: var(--screen-text);
+    }
+
+    .user {
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 3px solid var(--screen-dim);
+      align-self: flex-end;
+      max-width: 90%;
+    }
+
+    .ai {
+      background: rgba(0, 0, 0, 0.4);
+      border-left: 3px solid var(--screen-text);
+      align-self: flex-start;
+      max-width: 95%;
+    }
+
+    .thought {
+      font-size: 14px;
+      opacity: 0.75;
+      border-bottom: 1px dashed var(--screen-dim);
+      margin-bottom: 4px;
+      padding-bottom: 2px;
+    }
+
+    .config-group {
+      display: flex;
+      gap: 4px;
+      margin-top: 8px;
+      margin-bottom: 4px;
+    }
+
+    .config-group select, .config-group input {
+      background: #000;
+      color: #bbccff;
+      border: 1px solid var(--border);
+      font-family: 'VT323', monospace;
+      font-size: 14px;
+      padding: 4px;
+      outline: none;
+      border-radius: 3px;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    #input-deck {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    #userInput {
+      flex: 1;
+      background: var(--screen-bg);
+      border: 1px solid var(--screen-dim);
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      padding: 6px 10px;
+      
