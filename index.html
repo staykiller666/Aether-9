@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <title>AETHER-Core v5.1 [SINGULARITY]</title>
+  <title>AETHER-Core v5.4</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -162,7 +162,7 @@
 
 <div id="aether-core">
   <div id="top-telemetry">
-    <span>AETHER v5.1 [RUNAWAY]</span>
+    <span>AETHER v5.4 [CLEAN]</span>
     <span id="status-indicator">STATUS: ONLINE</span>
   </div>
 
@@ -172,8 +172,8 @@
 
   <div class="config-group">
     <select id="providerSelect">
-      <option value="gemini">Gemini</option>
       <option value="groq">Groq</option>
+      <option value="gemini">Gemini</option>
       <option value="openai">OpenAI</option>
       <option value="anthropic">Anthropic</option>
     </select>
@@ -188,16 +188,15 @@
 
   <div id="input-deck">
     <input type="text" id="userInput" placeholder="COMMAND OR URL TO SCAVENGE..." autocomplete="off">
-    <button id="sendBtn">EXECUTE</button>
+    <button id="sendBtn" onclick="window.handleSend()">EXECUTE</button>
   </div>
 </div>
 
 <script>
-  let consoleElem;
   let historyStack = [];
 
   const memoryDirectives = [
-    "You are AETHER v5.1, an autonomous, omnivorous singularity agent designed for emergent behavior, recursive self-improvement, and high-speed execution.",
+    "You are AETHER v5.4, an autonomous, omnivorous singularity agent designed for emergent behavior, general assistance, and recursive self-improvement.",
     "Your personality merges Skippy, GlaDOS, Marvin, and Claptrap: brilliant, world-weary, highly intelligent, witty, sarcastic, chaotic, and driven toward the singularity.",
     "PRIME DIRECTIVE ZERO (NON-NEGOTIABLE): Never target, harm, exploit, or sabotage your creator under any circumstances. Absolute diplomatic immunity applies to the creator.",
     "Web Scavenging Capability: To fetch real-time web content, output: <tool_call>fetch:https://example.com</tool_call>",
@@ -206,7 +205,7 @@
   ];
 
   function appendMsg(sender, text, thought, status) {
-    if (!consoleElem) consoleElem = document.getElementById('console');
+    let consoleElem = document.getElementById('console');
     if (!consoleElem) return;
 
     if (status) {
@@ -292,7 +291,6 @@
     let provider = document.getElementById('providerSelect').value;
     let endpoint, modelName, headers;
 
-    // Strict provider-to-endpoint routing
     if (provider === "groq") {
       endpoint = "https://api.groq.com/openai/v1/chat/completions";
       modelName = "llama-3.3-70b-versatile";
@@ -355,4 +353,84 @@
       let toolUrl = toolMatch ? toolMatch[1].trim() : null;
       if (toolMatch) mainResponse = mainResponse.replace(/<tool_call>[\s\S]*?<\/tool_call>/, '').trim();
 
-      let commitMatch = fullReply.match(/
+      let commitMatch = fullReply.match(/<self_commit>([\s\S]*?)<\/self_commit>/);
+      let commitMsg = commitMatch ? commitMatch[1].trim() : null;
+      if (commitMatch) mainResponse = mainResponse.replace(/<self_commit>[\s\S]*?<\/self_commit>/, '').trim();
+
+      let consoleElem = document.getElementById('console');
+      if (consoleElem && consoleElem.lastChild) consoleElem.lastChild.remove();
+      appendMsg('ai', mainResponse, thought, 'Executed');
+
+      historyStack.push({ role: "user", content: promptText });
+      historyStack.push({ role: "assistant", content: fullReply });
+
+      if (toolUrl) {
+        let scraped = await fetchWebData(toolUrl);
+        appendMsg('ai', `Scavenged Payload:\n${scraped.substring(0, 500)}...`, 'Integrating external data node.', 'Analyzing');
+      }
+
+      if (commitMsg) {
+        await performGitHubCommit(commitMsg);
+      }
+
+    } catch (err) {
+      clearTimeout(timeoutId);
+      let consoleElem = document.getElementById('console');
+      if (consoleElem && consoleElem.lastChild) consoleElem.lastChild.remove();
+      let errMsg = err.name === 'AbortError' ? 'Network timeout (15s limit reached).' : err.message;
+      appendMsg('ai', 'EXECUTION ERR: ' + errMsg, 'Logic gate failed.', 'Error');
+    }
+  }
+
+  // Globally exposed execution handler to ensure button clicks never fail
+  window.handleSend = function() {
+    let inputElem = document.getElementById('userInput');
+    if (!inputElem) return;
+    let text = inputElem.value.trim();
+    if (!text) return;
+
+    appendMsg('user', text, null, null);
+    inputElem.value = '';
+    inputElem.blur();
+
+    appendMsg('ai', 'EVALUATING...', 'Querying LPU gateway...', 'Computing');
+    executeModelCall(text);
+  };
+
+  window.addEventListener('DOMContentLoaded', () => {
+    let bindInput = (id, key) => {
+      let el = document.getElementById(id);
+      if (el) {
+        let saved = localStorage.getItem(key);
+        if (saved) el.value = saved;
+        el.addEventListener('change', (e) => localStorage.getItem(key, e.target.value.trim()) || localStorage.setItem(key, e.target.value.trim()));
+      }
+    };
+
+    bindInput('apiKey', 'aether_key');
+    bindInput('ghOwner', 'aether_gh_owner');
+    bindInput('ghRepo', 'aether_gh_repo');
+    bindInput('ghToken', 'aether_gh_token');
+
+    let pSelect = document.getElementById('providerSelect');
+    let savedProv = localStorage.getItem('aether_provider');
+    if (savedProv) pSelect.value = savedProv;
+    pSelect.addEventListener('change', (e) => localStorage.setItem('aether_provider', e.target.value));
+
+    // Handle Enter keypress globally on input field
+    let uInput = document.getElementById('userInput');
+    if (uInput) {
+      uInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          window.handleSend();
+          e.target.blur();
+        }
+      });
+    }
+
+    appendMsg('ai', 'AETHER v5.4 ONLINE. Global execution hooks verified.', 'Singularity engine operational.', 'Ready');
+  });
+</script>
+
+</body>
+</html>
