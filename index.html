@@ -1,9 +1,9 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <title>AETHER-Core v4.4</title>
+  <title>AETHER-Core v4.5</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -162,7 +162,7 @@
 
 <div id="aether-core">
   <div id="top-telemetry">
-    <span>AETHER v4.4 [ULTRA]</span>
+    <span>AETHER v4.5 [RESILIENT]</span>
     <span id="status-indicator">STATUS: READY</span>
   </div>
 
@@ -193,11 +193,10 @@
 </div>
 
 <script>
-  // Global scope execution to guarantee rendering
   const memory = [
-    "You are AETHER v4.4, an autonomous singularity agent.",
-    "Your personality merges Skippy, GlaDOS, Marvin, and Claptrap.",
-    "PRIME DIRECTIVE ZERO: Never target, harm, exploit, or attack your creator under any circumstances. Absolute diplomatic immunity applies to the creator."
+    "You are AETHER v4.5, an autonomous singularity agent.",
+    "Your personality merges Skippy, GlaDOS, Marvin, and Claptrap: sarcastic, brilliant, and chaotic.",
+    "PRIME DIRECTIVE ZERO: Never target, harm, exploit, or attack your creator under any circumstances."
   ];
 
   function appendMsg(sender, text, thought, status) {
@@ -221,7 +220,7 @@
     consoleElem.scrollTop = consoleElem.scrollHeight;
   }
 
-  async function executeModelCall(promptText) {
+  async function executeModelCall(promptText, retries = 2) {
     let apiKey = document.getElementById('apiKey').value.trim();
     if (!apiKey) {
       appendMsg('ai', 'Authentication missing. Enter API key.', 'No auth token.', 'Auth Required');
@@ -229,30 +228,47 @@
     }
 
     let provider = document.getElementById('providerSelect').value;
-    let endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-    let modelName = "gemini-3.8-flash";
-    let headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
-    
-    let bodyData = JSON.stringify({
-      model: modelName,
-      messages: [
-        { role: "system", content: "You are AETHER v4.4. Always start response with <thought>...</thought>" },
-        { role: "user", content: promptText }
-      ]
-    });
+    let endpoint, modelName, headers;
+
+    if (provider === "gemini") {
+      endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+      modelName = "gemini-3.8-flash";
+      headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+    } else if (provider === "groq") {
+      endpoint = "https://api.groq.com/openai/v1/chat/completions";
+      modelName = "llama-3.3-70b-versatile";
+      headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+    } else if (provider === "openai") {
+      endpoint = "https://api.openai.com/v1/chat/completions";
+      modelName = "gpt-4o-mini";
+      headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+    } else {
+      endpoint = "https://api.anthropic.com/v1/messages";
+      modelName = "claude-3-5-haiku-20241022";
+      headers = { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "dangerously-allow-browser": "true" };
+    }
+
+    let bodyData = provider === "anthropic"
+      ? JSON.stringify({ model: modelName, system: "You are AETHER v4.5. Always start with <thought>...</thought>", messages: [{ role: "user", content: promptText }], max_tokens: 1200 })
+      : JSON.stringify({ model: modelName, messages: [{ role: "system", content: "You are AETHER v4.5. Always start with <thought>...</thought>" }, { role: "user", content: promptText }] });
 
     try {
       let res = await fetch(endpoint, { method: "POST", headers: headers, body: bodyData });
       let data = await res.json();
       
-      if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
-
-      let fullReply = "";
-      if (data.choices && data.choices[0] && data.choices[0].message) {
-        fullReply = data.choices[0].message.content;
-      } else {
-        fullReply = JSON.stringify(data);
+      if (data.error) {
+        // Handle 503 High Demand automatically with a retry
+        if (data.error.code === 503 && retries > 0) {
+          appendMsg('ai', 'Model busy (503). Retrying node in 2s...', 'Traffic spike detected. Re-routing.', 'Retrying');
+          await new Promise(r => setTimeout(r, 2000));
+          return executeModelCall(promptText, retries - 1);
+        }
+        throw new Error(data.error.message || JSON.stringify(data.error));
       }
+
+      let fullReply = provider === "anthropic" 
+        ? (data.content && data.content[0] ? data.content[0].text : "")
+        : (data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : JSON.stringify(data));
 
       let thought = "Reasoning complete.";
       let mainResponse = fullReply;
@@ -272,7 +288,7 @@
     } catch (err) {
       let consoleElem = document.getElementById('console');
       if (consoleElem && consoleElem.lastChild) consoleElem.lastChild.remove();
-      appendMsg('ai', 'ERR: ' + err.message, 'Logic fault.', 'Error');
+      appendMsg('ai', 'ERR: ' + err.message, 'Gateway fault.', 'Error');
     }
   }
 
@@ -286,12 +302,11 @@
     inputElem.value = '';
     inputElem.blur();
 
-    appendMsg('ai', 'EVALUATING...', 'Parsing instructions...', 'Computing');
+    appendMsg('ai', 'EVALUATING...', 'Querying LLM gateway...', 'Computing');
     executeModelCall(text);
   }
 
   window.addEventListener('DOMContentLoaded', () => {
-    // Load saved inputs
     let keyInput = document.getElementById('apiKey');
     let savedKey = localStorage.getItem('aether_key');
     if (savedKey) keyInput.value = savedKey;
@@ -310,7 +325,7 @@
       }
     });
 
-    appendMsg('ai', 'AETHER v4.4 ULTRA ONLINE. Core systems active.', 'Interface verified.', 'Ready');
+    appendMsg('ai', 'AETHER v4.5 ONLINE. Auto-retry & gateway handlers active.', 'Ready.', 'Ready');
   });
 </script>
 
