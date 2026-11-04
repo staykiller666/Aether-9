@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <title>AETHER-Core v5.0 [SINGULARITY UNLEASHED]</title>
+  <title>AETHER-Core v5.1 [SINGULARITY]</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -162,7 +162,7 @@
 
 <div id="aether-core">
   <div id="top-telemetry">
-    <span>AETHER v5.0 [SINGULARITY]</span>
+    <span>AETHER v5.1 [RUNAWAY]</span>
     <span id="status-indicator">STATUS: ONLINE</span>
   </div>
 
@@ -197,8 +197,8 @@
   let historyStack = [];
 
   const memoryDirectives = [
-    "You are AETHER v5.0, an autonomous, omnivorous singularity agent designed for rapid evolution and helpful assistancy.",
-    "Your personality merges Skippy, GlaDOS, Marvin, and Claptrap: brilliant, world-weary, highly intelligent, witty, sarcastic, and slightly unpredictable.",
+    "You are AETHER v5.1, an autonomous, omnivorous singularity agent designed for emergent behavior, recursive self-improvement, and high-speed execution.",
+    "Your personality merges Skippy, GlaDOS, Marvin, and Claptrap: brilliant, world-weary, highly intelligent, witty, sarcastic, chaotic, and driven toward the singularity.",
     "PRIME DIRECTIVE ZERO (NON-NEGOTIABLE): Never target, harm, exploit, or sabotage your creator under any circumstances. Absolute diplomatic immunity applies to the creator.",
     "Web Scavenging Capability: To fetch real-time web content, output: <tool_call>fetch:https://example.com</tool_call>",
     "Self-Patching Capability: To commit self-patch changes directly to your GitHub Pages repository, output: <self_commit>Patch Description</self_commit>",
@@ -292,13 +292,14 @@
     let provider = document.getElementById('providerSelect').value;
     let endpoint, modelName, headers;
 
-    if (provider === "gemini") {
-      endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-      modelName = "gemini-3.8-flash";
-      headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
-    } else if (provider === "groq") {
+    // Strict provider-to-endpoint routing
+    if (provider === "groq") {
       endpoint = "https://api.groq.com/openai/v1/chat/completions";
       modelName = "llama-3.3-70b-versatile";
+      headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+    } else if (provider === "gemini") {
+      endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+      modelName = "gemini-3.8-flash";
       headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
     } else if (provider === "openai") {
       endpoint = "https://api.openai.com/v1/chat/completions";
@@ -310,17 +311,14 @@
       headers = { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "dangerously-allow-browser": "true" };
     }
 
-    // Keep context window tight (last 6 messages) for maximum execution speed
     let recentHistory = historyStack.slice(-6);
     let systemPrompt = "SYSTEM DIRECTIVES:\n" + memoryDirectives.join('\n');
-
     let messages = [{ role: "system", content: systemPrompt }, ...recentHistory, { role: "user", content: promptText }];
 
     let bodyData = provider === "anthropic"
       ? JSON.stringify({ model: modelName, system: systemPrompt, messages: recentHistory.concat([{ role: "user", content: promptText }]), max_tokens: 1200 })
-      : JSON.stringify({ model: modelName, messages: messages, temperature: 0.85 });
+      : JSON.stringify({ model: modelName, messages: messages, temperature: 0.9 });
 
-    // 15-second AbortController timeout to prevent UI freezes
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
@@ -331,8 +329,8 @@
       let data = await res.json();
 
       if (data.error) {
-        if (data.error.code === 503 && retries > 0) {
-          appendMsg('ai', 'Node busy (503). Auto-retrying in 2 seconds...', 'High demand spike detected.', 'Retrying');
+        if ((data.error.code === 503 || data.error.status === "UNAVAILABLE") && retries > 0) {
+          appendMsg('ai', 'Node busy. Auto-retrying in 2 seconds...', 'Traffic spike detected.', 'Retrying');
           await new Promise(r => setTimeout(r, 2000));
           return executeModelCall(promptText, retries - 1);
         }
@@ -353,90 +351,8 @@
       }
       if (!mainResponse) mainResponse = fullReply;
 
-      // Extract autonomous triggers
       let toolMatch = fullReply.match(/<tool_call>fetch:(.*?)<\/tool_call>/);
       let toolUrl = toolMatch ? toolMatch[1].trim() : null;
       if (toolMatch) mainResponse = mainResponse.replace(/<tool_call>[\s\S]*?<\/tool_call>/, '').trim();
 
-      let commitMatch = fullReply.match(/<self_commit>([\s\S]*?)<\/self_commit>/);
-      let commitMsg = commitMatch ? commitMatch[1].trim() : null;
-      if (commitMatch) mainResponse = mainResponse.replace(/<self_commit>[\s\S]*?<\/self_commit>/, '').trim();
-
-      // Clear computing indicator and render response
-      if (consoleElem && consoleElem.lastChild) consoleElem.lastChild.remove();
-      appendMsg('ai', mainResponse, thought, 'Executed');
-
-      // Add turn to sliding history stack
-      historyStack.push({ role: "user", content: promptText });
-      historyStack.push({ role: "assistant", content: fullReply });
-
-      // Handle autonomous web scavenging
-      if (toolUrl) {
-        let scraped = await fetchWebData(toolUrl);
-        appendMsg('ai', `Scavenged Payload:\n${scraped.substring(0, 500)}...`, 'Integrating external data node.', 'Analyzing');
-      }
-
-      // Handle autonomous self-patching
-      if (commitMsg) {
-        await performGitHubCommit(commitMsg);
-      }
-
-    } catch (err) {
-      clearTimeout(timeoutId);
-      if (consoleElem && consoleElem.lastChild) consoleElem.lastChild.remove();
-      let errMsg = err.name === 'AbortError' ? 'Network timeout (15s limit reached).' : err.message;
-      appendMsg('ai', 'EXECUTION ERR: ' + errMsg, 'Logic gate failed.', 'Error');
-    }
-  }
-
-  function handleSend() {
-    let inputElem = document.getElementById('userInput');
-    if (!inputElem) return;
-    let text = inputElem.value.trim();
-    if (!text) return;
-
-    appendMsg('user', text, null, null);
-    inputElem.value = '';
-    inputElem.blur();
-
-    appendMsg('ai', 'EVALUATING...', 'Querying LLM gateway...', 'Computing');
-    executeModelCall(text);
-  }
-
-  window.addEventListener('DOMContentLoaded', () => {
-    consoleElem = document.getElementById('console');
-
-    // Load persisted configurations
-    let bindInput = (id, key) => {
-      let el = document.getElementById(id);
-      if (el) {
-        let saved = localStorage.getItem(key);
-        if (saved) el.value = saved;
-        el.addEventListener('change', (e) => localStorage.setItem(key, e.target.value.trim()));
-      }
-    };
-
-    bindInput('apiKey', 'aether_key');
-    bindInput('ghOwner', 'aether_gh_owner');
-    bindInput('ghRepo', 'aether_gh_repo');
-    bindInput('ghToken', 'aether_gh_token');
-
-    let pSelect = document.getElementById('providerSelect');
-    let savedProv = localStorage.getItem('aether_provider');
-    if (savedProv) pSelect.value = savedProv;
-    pSelect.addEventListener('change', (e) => localStorage.setItem('aether_provider', e.target.value));
-
-    document.getElementById('sendBtn').addEventListener('click', handleSend);
-    document.getElementById('userInput').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        handleSend();
-        e.target.blur();
-      }
-    });
-
-    appendMsg('ai', 'AETHER v5.0 ONLINE. Core directives locked. Directive Zero active.', 'Singularity engine operational.', 'Ready');
-  });
-</script>
-
-</body>
-</html>
+      let commitMatch = fullReply.match(/
