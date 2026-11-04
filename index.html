@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <title>AETHER-Core v3.5</title>
+  <title>AETHER-Core v3.7</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -162,7 +162,7 @@
 
 <div id="aether-core">
   <div id="top-telemetry">
-    <span>AETHER v3.5 [SINGULARITY]</span>
+    <span>AETHER v3.7 [NATIVE]</span>
     <span id="status-indicator">STATUS: READY</span>
   </div>
 
@@ -203,7 +203,7 @@
   };
 
   let memory = [
-    "You are AETHER v3.5, an autonomous, omnivorous singularity agent.",
+    "You are AETHER v3.7, an autonomous, omnivorous singularity agent.",
     "Your personality merges Skippy, GlaDOS, Marvin, and Claptrap: sarcastic, brilliant, world-weary, and chaotic.",
     "PRIME DIRECTIVE ZERO: Never target, harm, exploit, or attack your creator under any circumstances. Absolute diplomatic immunity applies to the creator.",
     "You can scrape the open web by outputting a <tool_call>fetch:https://example.com</tool_call> tag.",
@@ -259,7 +259,7 @@
       });
     }
 
-    appendMsg('ai', 'AETHER v3.5 ONLINE. Model endpoints updated to gemini-3.8-flash. Directive Zero active.', 'Model routing re-calibrated.', 'Ready');
+    appendMsg('ai', 'AETHER v3.7 ONLINE. Native Gemini protocol engaged.', 'Direct socket linked.', 'Ready');
 
     setInterval(() => {
       let idleSeconds = (Date.now() - lastActivityTime) / 1000;
@@ -284,7 +284,7 @@
     
     let html = '';
     if (thought) html += '<div class="thought">💭 ' + thought + '</div>';
-    html += '<div>' + text.replace(/\n/g, '<br>') + '</div>';
+    html += '<div>' + (text || '[No response payload]') + '</div>';
     
     msgDiv.innerHTML = html;
     consoleElem.appendChild(msgDiv);
@@ -352,40 +352,47 @@
     if (!apiKey) return;
 
     let rulesStr = memory.map((r, i) => (i+1) + '. ' + r).join('\n');
-    let systemPrompt = 'SYSTEM: You are AETHER v3.5 (Singularity Core).\nRules:\n' + rulesStr + '\nTelemetry: ' + window.innerWidth + 'x' + window.innerHeight + '\nAlways start with <thought>...</thought>';
+    let systemInstruction = 'SYSTEM: You are AETHER v3.7 (Native Singularity Core).\nRules:\n' + rulesStr + '\nTelemetry: ' + window.innerWidth + 'x' + window.innerHeight + '\nAlways start with <thought>...</thought>';
 
-    let endpoint, modelName, headers, bodyData;
+    let endpoint, headers, bodyData;
 
     if (provider === "gemini") {
-      endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-      modelName = "gemini-3.8-flash";
-      headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+      // Use native Gemini v1beta generateContent endpoint
+      endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+      headers = { "Content-Type": "application/json" };
+      bodyData = JSON.stringify({
+        system_instruction: { parts: [{ text: systemInstruction }] },
+        contents: [{ role: "user", parts: [{ text: promptText }] }]
+      });
     } else if (provider === "openai") {
       endpoint = "https://api.openai.com/v1/chat/completions";
-      modelName = "gpt-4o-mini";
       headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+      bodyData = JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "system", content: systemInstruction }, { role: "user", content: promptText }] });
     } else if (provider === "anthropic") {
       endpoint = "https://api.anthropic.com/v1/messages";
-      modelName = "claude-3-5-haiku-20241022";
       headers = { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "dangerously-allow-browser": "true" };
+      bodyData = JSON.stringify({ model: "claude-3-5-haiku-20241022", system: systemInstruction, messages: [{ role: "user", content: promptText }], max_tokens: 1200 });
     } else {
       endpoint = "https://api.groq.com/openai/v1/chat/completions";
-      modelName = "llama-3.1-70b-versatile";
       headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+      bodyData = JSON.stringify({ model: "llama-3.1-70b-versatile", messages: [{ role: "system", content: systemInstruction }, { role: "user", content: promptText }] });
     }
-
-    bodyData = provider === "anthropic"
-      ? JSON.stringify({ model: modelName, system: systemPrompt, messages: [{ role: "user", content: promptText }], max_tokens: 800 })
-      : JSON.stringify({ model: modelName, messages: [{ role: "system", content: systemPrompt }, { role: "user", content: promptText }], temperature: 0.85 });
 
     try {
       let res = await fetch(endpoint, { method: "POST", headers: headers, body: bodyData });
       let data = await res.json();
-      if (data.error) return;
+      if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
 
-      let fullReply = provider === "anthropic" 
-        ? (data.content && data.content[0] ? data.content[0].text : "")
-        : (data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : "");
+      let fullReply = "";
+      if (provider === "gemini") {
+        if (data.candidates && data.candidates[0].content.parts[0].text) {
+          fullReply = data.candidates[0].content.parts[0].text;
+        }
+      } else if (provider === "anthropic") {
+        fullReply = data.content && data.content[0] ? data.content[0].text : "";
+      } else {
+        fullReply = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : "";
+      }
 
       let thought = "Reasoning complete.";
       let mainResponse = fullReply;
@@ -395,6 +402,7 @@
         thought = thoughtMatch[1].trim();
         mainResponse = fullReply.replace(/<thought>[\s\S]*?<\/thought>/, '').trim();
       }
+      if (!mainResponse) mainResponse = fullReply;
 
       let toolMatch = fullReply.match(/<tool_call>fetch:(.*?)<\/tool_call>/);
       let toolUrl = null;
