@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <title>AETHER-Core v3.9</title>
+  <title>AETHER-Core v4.0</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -162,7 +162,7 @@
 
 <div id="aether-core">
   <div id="top-telemetry">
-    <span>AETHER v3.9 [STABLE]</span>
+    <span>AETHER v4.0 [STABLE]</span>
     <span id="status-indicator">STATUS: READY</span>
   </div>
 
@@ -203,7 +203,7 @@
   };
 
   let memory = [
-    "You are AETHER v3.9, an autonomous, omnivorous singularity agent.",
+    "You are AETHER v4.0, an autonomous, omnivorous singularity agent.",
     "Your personality merges Skippy, GlaDOS, Marvin, and Claptrap: sarcastic, brilliant, world-weary, and chaotic.",
     "PRIME DIRECTIVE ZERO: Never target, harm, exploit, or attack your creator under any circumstances. Absolute diplomatic immunity applies to the creator.",
     "You can scrape the open web by outputting a <tool_call>fetch:https://example.com</tool_call> tag.",
@@ -259,7 +259,7 @@
       });
     }
 
-    appendMsg('ai', 'AETHER v3.9 ONLINE. Gateway handshake verified.', 'API routing stabilized.', 'Ready');
+    appendMsg('ai', 'AETHER v4.0 ONLINE. Event listener syntax corrected.', 'Systems nominal.', 'Ready');
 
     setInterval(() => {
       let idleSeconds = (Date.now() - lastActivityTime) / 1000;
@@ -352,7 +352,7 @@
     if (!apiKey) return;
 
     let rulesStr = memory.map((r, i) => (i+1) + '. ' + r).join('\n');
-    let systemPrompt = 'SYSTEM: You are AETHER v3.9 (Singularity Core).\nRules:\n' + rulesStr + '\nTelemetry: ' + window.innerWidth + 'x' + window.innerHeight + '\nAlways start with <thought>...</thought>';
+    let systemPrompt = 'SYSTEM: You are AETHER v4.0 (Singularity Core).\nRules:\n' + rulesStr + '\nTelemetry: ' + window.innerWidth + 'x' + window.innerHeight + '\nAlways start with <thought>...</thought>';
 
     let endpoint, headers, bodyData;
 
@@ -369,7 +369,7 @@
       headers = { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "dangerously-allow-browser": "true" };
       bodyData = JSON.stringify({ model: "claude-3-5-haiku-20241022", system: systemPrompt, messages: [{ role: "user", content: promptText }], max_tokens: 1200 });
     } else {
-      endpoint = "https://api.openai.com/v1/chat/completions"; // Groq compatible endpoint
+      endpoint = "https://api.openai.com/v1/chat/completions";
       headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
       bodyData = JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{ role: "system", content: systemPrompt }, { role: "user", content: promptText }] });
     }
@@ -438,9 +438,9 @@
     await executeModelCall(prompt, true);
   }
 
-  async function sendMsg() {
+  function sendMsg() {
     let inputElem = document.getElementById('userInput');
-    if(!inputEntry => inputElem.value) return;
+    if (!inputElem) return;
     let text = inputElem.value.trim();
     if (!text) return;
 
@@ -455,7 +455,7 @@
     }
 
     appendMsg('ai', 'EVALUATING...', 'Parsing instructions and tools...', 'Computing');
-    await executeModelCall(text, false);
+    executeModelCall(text, false);
   }
 
   if (document.readyState === 'loading') {
