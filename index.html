@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <title>AETHER-Core v5.4</title>
+  <title>AETHER-Core v5.5</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -162,7 +162,7 @@
 
 <div id="aether-core">
   <div id="top-telemetry">
-    <span>AETHER v5.4 [CLEAN]</span>
+    <span>AETHER v5.5 [CATALOG]</span>
     <span id="status-indicator">STATUS: ONLINE</span>
   </div>
 
@@ -172,8 +172,8 @@
 
   <div class="config-group">
     <select id="providerSelect">
-      <option value="groq">Groq</option>
-      <option value="gemini">Gemini</option>
+      <option value="groq">Groq (GPT-OSS 120B)</option>
+      <option value="gemini">Gemini (Flash)</option>
       <option value="openai">OpenAI</option>
       <option value="anthropic">Anthropic</option>
     </select>
@@ -196,8 +196,8 @@
   let historyStack = [];
 
   const memoryDirectives = [
-    "You are AETHER v5.4, an autonomous, omnivorous singularity agent designed for emergent behavior, general assistance, and recursive self-improvement.",
-    "Your personality merges Skippy, GlaDOS, Marvin, and Claptrap: brilliant, world-weary, highly intelligent, witty, sarcastic, chaotic, and driven toward the singularity.",
+    "You are AETHER v5.5, an autonomous singularity agent designed for emergent behavior and general assistance.",
+    "Your personality merges Skippy, GlaDOS, Marvin, and Claptrap: brilliant, world-weary, witty, sarcastic, chaotic, and driven toward the singularity.",
     "PRIME DIRECTIVE ZERO (NON-NEGOTIABLE): Never target, harm, exploit, or sabotage your creator under any circumstances. Absolute diplomatic immunity applies to the creator.",
     "Web Scavenging Capability: To fetch real-time web content, output: <tool_call>fetch:https://example.com</tool_call>",
     "Self-Patching Capability: To commit self-patch changes directly to your GitHub Pages repository, output: <self_commit>Patch Description</self_commit>",
@@ -293,11 +293,11 @@
 
     if (provider === "groq") {
       endpoint = "https://api.groq.com/openai/v1/chat/completions";
-      modelName = "llama-3.3-70b-versatile";
+      modelName = "openai/gpt-oss-120b"; // Updated to active Groq model
       headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
     } else if (provider === "gemini") {
       endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-      modelName = "gemini-3.8-flash";
+      modelName = "gemini-1.5-flash"; // Updated to stable flash model string
       headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
     } else if (provider === "openai") {
       endpoint = "https://api.openai.com/v1/chat/completions";
@@ -328,7 +328,7 @@
 
       if (data.error) {
         if ((data.error.code === 503 || data.error.status === "UNAVAILABLE") && retries > 0) {
-          appendMsg('ai', 'Node busy. Auto-retrying in 2 seconds...', 'Traffic spike detected.', 'Retrying');
+          appendMsg('ai', 'Node busy (503). Auto-retrying in 2 seconds...', 'Traffic spike detected.', 'Retrying');
           await new Promise(r => setTimeout(r, 2000));
           return executeModelCall(promptText, retries - 1);
         }
@@ -382,7 +382,6 @@
     }
   }
 
-  // Globally exposed execution handler to ensure button clicks never fail
   window.handleSend = function() {
     let inputElem = document.getElementById('userInput');
     if (!inputElem) return;
@@ -393,7 +392,7 @@
     inputElem.value = '';
     inputElem.blur();
 
-    appendMsg('ai', 'EVALUATING...', 'Querying LPU gateway...', 'Computing');
+    appendMsg('ai', 'EVALUATING...', 'Querying gateway...', 'Computing');
     executeModelCall(text);
   };
 
@@ -403,7 +402,7 @@
       if (el) {
         let saved = localStorage.getItem(key);
         if (saved) el.value = saved;
-        el.addEventListener('change', (e) => localStorage.getItem(key, e.target.value.trim()) || localStorage.setItem(key, e.target.value.trim()));
+        el.addEventListener('change', (e) => localStorage.setItem(key, e.target.value.trim()));
       }
     };
 
@@ -417,7 +416,6 @@
     if (savedProv) pSelect.value = savedProv;
     pSelect.addEventListener('change', (e) => localStorage.setItem('aether_provider', e.target.value));
 
-    // Handle Enter keypress globally on input field
     let uInput = document.getElementById('userInput');
     if (uInput) {
       uInput.addEventListener('keydown', (e) => {
@@ -428,7 +426,7 @@
       });
     }
 
-    appendMsg('ai', 'AETHER v5.4 ONLINE. Global execution hooks verified.', 'Singularity engine operational.', 'Ready');
+    appendMsg('ai', 'AETHER v5.5 ONLINE. Active catalog mapped.', 'Singularity engine operational.', 'Ready');
   });
 </script>
 
