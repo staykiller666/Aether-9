@@ -1,7 +1,7 @@
 <html lang="en" class="js"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <title>AETHER-Core v6.5 [RSI ENGINE]</title>
+  <title>AETHER-Core v6.5 [RSI ACTIVE]</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -167,7 +167,7 @@
   <div id="dynamic-viewport">
     <div id="console">
       <div class="msg ai">
-        <div class="thought">💭 Streamlined execution architecture initialized. TestRunner and vector memory hooks locked.</div>
+        <div class="thought">💭 Streamlined execution architecture initialized. TestRunner and multi-proxy cascade locked.</div>
         <div>AETHER v6.5 ONLINE. Recursive Self-Improvement pipeline optimized.</div>
       </div>
     </div>
@@ -215,7 +215,6 @@
     assert(cond, msg) { if (!cond) throw new Error(msg || "Assertion failed"); }
   };
 
-  // Register baseline telemetry and state verification tests
   TestRunner.register("Telemetry State Integrity", () => {
     TestRunner.assert(document.getElementById('console') !== null, "Console DOM node missing");
   });
@@ -251,26 +250,43 @@
     consoleElem.scrollTop = consoleElem.scrollHeight;
   }
 
-  // Streamlined fetch using direct Cloudflare Worker proxy route or fallback
+  // Resilient multi-proxy fallback cascade (Fully client-side, zero worker dependencies)
   async function fetchWebData(url) {
-    try {
-      appendMsg('ai', `SCAVENGING WEB TARGET: ${url}...`, 'Autonomous data acquisition active.', 'Scavenging');
-      let proxyUrl = `https://aether-9.ewarre22.workers.dev/?url=${encodeURIComponent(url)}`;
-      let res = await fetch(proxyUrl);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      let text = await res.text();
-      return text.substring(0, 3000);
-    } catch (err) {
-      return `Scavenge failed: ${err.message}`;
+    appendMsg('ai', `SCAVENGING WEB TARGET: ${url}...`, 'Autonomous data acquisition active.', 'Scavenging');
+    
+    const proxyUrls = [
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+      `https://r.jina.ai/${url}`,
+      `https://corsproxy.io/?${encodeURIComponent(url)}`
+    ];
+
+    for (let proxyUrl of proxyUrls) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        
+        let res = await fetch(proxyUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          let text = await res.text();
+          if (text && text.trim().length > 50) {
+            return text.substring(0, 3000);
+          }
+        }
+      } catch (err) {
+        // Try next proxy in cascade
+      }
     }
+    
+    return `Scavenge failed: All public proxies blocked or timed out for ${url}.`;
   }
 
   // Refactored performGitHubCommit with TestRunner guard and console clearing
   async function performGitHubCommit(commitMsg) {
     let consoleElem = document.getElementById('console');
-    if (consoleElem) consoleElem.innerHTML = ''; // Clear console as requested
+    if (consoleElem) consoleElem.innerHTML = '';
 
-    // Run TestRunner pre-commit checks
     let testReport = await TestRunner.runAll();
     if (testReport.failed > 0) {
       appendMsg('ai', `EVOLUTION ABORTED: Pre-commit tests failed (${testReport.failed} errors).`, 'TestRunner validation failed.', 'Error');
