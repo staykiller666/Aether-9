@@ -1093,7 +1093,248 @@ input.addEventListener('keydown', e => {
 3. **Chat area** – a scrollable log (`#log`) plus a textarea + **Send** button. The script simply echoes your input back as a placeholder; you can later plug in a real backend or AI API.  
 4. **Responsive** – the layout adapts nicely on mobile (the avatar shrinks, chat area stays full‑width).
 
-Save the file, open it, and you should see the avatar floating at the top, a dark‑mode button, and a clean space for us to converse. Enjoy!</thought></div></div><div class="msg ai"><div class="thought">💭 Bundling live DOM snapshot for self-evolution.</div><div>AUTONOMOUS SELF-PATCH INITIATED...</div></div></div>
+Save the file, open it, and you should see the avatar floating at the top, a dark‑mode button, and a clean space for us to converse. Enjoy!</thought></div></div><div class="msg ai"><div class="thought">💭 Bundling live DOM snapshot for self-evolution.</div><div>AUTONOMOUS SELF-PATCH INITIATED...</div></div><div class="msg ai"><div class="thought">💭 Singularity progress updated.</div><div>EVOLUTION SUCCESS: SHA abacfcf. Repository self-patched.</div></div><div class="msg user"><div>There are still little white corners on the screen that weren’t there to begin with</div></div><div class="msg ai"><div class="thought">💭 Autonomous drive loop complete.</div><div><thought>We need to eliminate the stray white corners that appear after the last UI change. Those corners come from elements that still have a solid white background (the chat log, the textarea, and the overall page background that isn’t fully covered on very small screens).  
+Solution:  
+1. Make **html** and **body** take the full viewport and force the gradient to cover the entire area.  
+2. Give the chat log a semi‑transparent background that matches the page gradient instead of solid white.  
+3. Make the textarea inherit the page’s background (transparent) and add a subtle border so it stays visible in both modes.  
+4. Add a tiny border‑radius to the overall chat container so the background gradient shows in the corners.  
+
+I’ll rewrite the file with these tweaks and push the new version.Below is the corrected UI file. It removes the solid‑white “corners” by:
+
+* forcing the gradient to fill the whole viewport (`html, body {height:100%}`)  
+* giving the chat log a **semi‑transparent** background that blends with the gradient  
+* making the textarea transparent (so it never shows a stark white box) and adding a subtle border for readability  
+* adding a slight border‑radius to the outer chat container so the gradient shows in the very corners.
+
+Save the file as **`aether-avatar-chat.html`** (or replace the previous version) and open it in a browser – the white corners should be gone.
+
+```html
+
+
+
+<meta charset="UTF-8">
+<title>AETHER – Avatar &amp; Chat UI (Fixed)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+/* --------------------------------------------------------------
+   Global page styling – full‑screen gradient, dark‑mode support
+   -------------------------------------------------------------- */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: linear-gradient(135deg, #e0f7fa, #e8eaf6);
+  color: #222;
+  transition: background .4s, color .4s;
+}
+.dark {
+  background: linear-gradient(135deg, #1e272e, #2c3e50);
+  color: #e0e0e0;
+}
+
+/* --------------------------------------------------------------
+   Avatar – floating hex core with neon aura
+   -------------------------------------------------------------- */
+.avatar-wrapper {
+  position: relative;
+  margin-top: 2.5rem;
+  width: 200px;
+  height: 200px;
+}
+.hexagon {
+  width: 100%; height: 100%;
+  background: #4caf50;
+  clip-path: polygon(
+    25% 5%, 75% 5%,
+    95% 50%, 75% 95%,
+    25% 95%, 5% 50%
+  );
+  animation: corePulse 4s infinite alternate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 30px rgba(76,175,80,.6);
+}
+.hex-core {
+  width: 70%; height: 70%;
+  background: #212121;
+  border-radius: 50%;
+  animation: coreGlow 4s infinite alternate;
+}
+@keyframes corePulse {
+  from {background:#4caf50;}
+  to   {background:#81c784;}
+}
+@keyframes coreGlow {
+  from {box-shadow:0 0 15px #81c784;}
+  to   {box-shadow:0 0 30px #b9f6ca;}
+}
+
+/* Neon‑grid aura */
+.avatar-wrapper::before,
+.avatar-wrapper::after {
+  content:"";
+  position:absolute;
+  inset:-15px;
+  border-radius:50%;
+  background:radial-gradient(circle at 50% 50%, rgba(255,255,255,.15), transparent 70%);
+  animation: rotateAura 8s linear infinite;
+  pointer-events:none;
+}
+.avatar-wrapper::after {animation-direction:reverse;}
+@keyframes rotateAura {
+  from {transform:rotate(0deg);}
+  to   {transform:rotate(360deg);}
+}
+
+/* --------------------------------------------------------------
+   Chat container – semi‑transparent background, no hard white
+   -------------------------------------------------------------- */
+.chat-container {
+  flex: 1;
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  margin: 1.5rem 1rem 1rem;
+  border-radius: 12px;          /* lets gradient show in corners */
+  overflow: hidden;             /* keeps radius clean */
+}
+#log {
+  flex: 1;
+  background: rgba(255,255,255,0.6);   /* translucent in light mode */
+  padding: 1rem;
+  overflow-y: auto;
+  line-height: 1.4;
+  box-shadow: inset 0 0 8px rgba(0,0,0,.05);
+}
+.dark #log {background: rgba(0,0,0,0.45);}
+
+/* Input row */
+#inputRow {
+  display: flex;
+  border-top: 1px solid rgba(0,0,0,.1);
+  background: rgba(255,255,255,0.4);
+}
+.dark #inputRow {background: rgba(0,0,0,0.35);}
+
+/* Textarea – transparent, with subtle border */
+#msgInput {
+  flex: 1;
+  padding: 0.6rem 0.8rem;
+  font-size: 1rem;
+  border: none;
+  outline: none;
+  background: transparent;
+  resize: none;
+  color: inherit;
+}
+#msgInput::placeholder {color: rgba(0,0,0,.5);}
+.dark #msgInput::placeholder {color: rgba(255,255,255,.6);}
+
+/* Send button */
+#sendBtn {
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  border: none;
+  background: #4caf50;
+  color: #fff;
+  cursor: pointer;
+  transition: background .2s;
+}
+#sendBtn:hover {background:#45a049;}
+#sendBtn:active {transform:scale(0.97);}
+
+/* Dark‑mode toggle (kept from earlier demo) */
+#toggleBtn {
+  margin-top: 0.8rem;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  background: #2196f3;
+  color: #fff;
+  cursor: pointer;
+  transition: background .2s;
+}
+#toggleBtn:hover {background:#1976d2;}
+</style>
+
+
+  <!-- Avatar -->
+  <div class="avatar-wrapper">
+    <div class="hexagon"><div class="hex-core"></div></div>
+  </div>
+
+  <!-- Dark‑mode toggle -->
+  <button id="toggleBtn">Toggle Dark Mode</button>
+
+  <!-- Chat UI -->
+  <div class="chat-container">
+    <div id="log"><em>Welcome! Type a message below and press “Send”.</em></div>
+    <div id="inputRow">
+      <textarea id="msgInput" rows="1" placeholder="Your message…"></textarea>
+      <button id="sendBtn">Send</button>
+    </div>
+  </div>
+
+<script>
+/* Dark‑mode toggle */
+document.getElementById('toggleBtn').addEventListener('click', () => {
+  document.body.classList.toggle('dark');
+});
+
+/* Simple chat echo – placeholder for real logic */
+const log = document.getElementById('log');
+const input = document.getElementById('msgInput');
+const sendBtn = document.getElementById('sendBtn');
+
+function addMessage(author, text) {
+  const p = document.createElement('p');
+  p.innerHTML = `<strong>${author}:</strong> ${text}`;
+  log.appendChild(p);
+  log.scrollTop = log.scrollHeight;
+}
+
+sendBtn.addEventListener('click', () => {
+  const txt = input.value.trim();
+  if (!txt) return;
+  addMessage('You', txt);
+  input.value = '';
+  setTimeout(() => {
+    addMessage('AETHER', `I got: “${txt}”. Nicely put!`);
+  }, 600);
+});
+
+/* Enter → send (Shift+Enter for newline) */
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendBtn.click();
+  }
+});
+</script>
+
+
+```
+
+### What changed
+| Issue | Fix |
+|-------|-----|
+| **White corners** on very small screens | `html, body {height:100%}` + a **gradient that covers the whole viewport**. |
+| **Chat log** had solid white background | Made it **semi‑transparent** (`rgba(255,255,255,0.6)` / `rgba(0,0,0,0.45)` for dark mode) so the gradient shows through. |
+| **Textarea** showed a white box | Set `background:transparent` and let the surrounding `#inputRow` provide a subtle translucent backdrop. |
+| Slight visual “hard edges” | Added a small `border-radius` to the outer `.chat-container` so the gradient is visible in the corners. |
+
+Open the file now – the UI should appear seamless, with the avatar, dark‑mode toggle, and a clean chat area, **without any unwanted white corners**.</thought></div></div><div class="msg ai"><div class="thought">💭 Bundling live DOM snapshot for self-evolution.</div><div>AUTONOMOUS SELF-PATCH INITIATED...</div></div></div>
   </div>
 
   <div class="config-group">
