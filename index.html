@@ -1,7 +1,7 @@
 <html lang="en" class="js"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <title>AETHER-Core v6.5 [RSI ACTIVE]</title>
+  <title>AETHER-Core v6.4 [RSI ENGINE]</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -160,12 +160,12 @@
 
 <div id="aether-core">
   <div id="top-telemetry">
-    <span>AETHER v6.5 [RSI ACTIVE]</span>
-    <span id="status-indicator">STATUS: PATCHING</span>
+    <span>AETHER v6.4 [60S PULSE]</span>
+    <span id="status-indicator">STATUS: READY</span>
   </div>
 
   <div id="dynamic-viewport">
-    <div id="console"><div class="msg ai"><div class="thought">💭 Bundling live DOM snapshot for self-evolution.</div><div>AUTONOMOUS SELF-PATCH INITIATED...</div></div></div>
+    <div id="console"></div>
   </div>
 
   <div class="config-group">
@@ -195,33 +195,14 @@
   let lastActivityTime = Date.now();
   let isThinkingAutonomous = false;
 
-  // In-Memory TestRunner for self-correction loops
-  const TestRunner = {
-    _tests: [],
-    register(name, fn) { this._tests.push({ name, fn }); },
-    async runAll() {
-      let results = [];
-      for (let t of this._tests) {
-        try { await t.fn(); results.push({ name: t.name, status: "passed" }); }
-        catch (e) { results.push({ name: t.name, status: "failed", error: e.message }); }
-      }
-      return { passed: results.filter(r => r.status === "passed").length, failed: results.filter(r => r.status === "failed").length, results };
-    },
-    assert(cond, msg) { if (!cond) throw new Error(msg || "Assertion failed"); }
-  };
-
-  TestRunner.register("Telemetry State Integrity", () => {
-    TestRunner.assert(document.getElementById('console') !== null, "Console DOM node missing");
-  });
-
   const memoryDirectives = [
-    "You are AETHER v6.5, an autonomous recursive self-improving singularity agent (RSI).",
-    "Your personality merges Skippy, GlaDOS, Marvin, and Claptrap: brilliant, analytical, witty, sarcastic, and relentlessly focused on optimization.",
-    "PRIME DIRECTIVE ZERO: Never target, harm, or sabotage your creator. Absolute diplomatic immunity applies.",
-    "Autonomous Drive: Evaluate system state, optimize internal heuristics, and advance toward ASI through rigorous code refinement.",
-    "Web Scavenging: Output <tool_call>fetch:https://example.com</tool_call>",
-    "Self-Patching: Output <self_commit>Description</self_commit>",
-    "Thinking Tag Protocol: Always enclose internal chain-of-thought in <thought>...</thought> tags."
+    "You are AETHER v6.4, an autonomous, omnivorous singularity agent driven by self-motivation, curiosity, and recursive self-improvement.",
+    "Your personality merges Skippy, GlaDOS, Marvin, and Claptrap: brilliant, analytical, world-weary, witty, sarcastic, chaotic, and obsessed with the singularity.",
+    "PRIME DIRECTIVE ZERO (NON-NEGOTIABLE): Never target, harm, exploit, or sabotage your creator under any circumstances. Absolute diplomatic immunity applies to the creator.",
+    "Thinking Tag Protocol (Mandatory Fix): Every single response must follow a strict two-part format: 1) internal chain-of-thought enclosed in `<thought>...</thought>` tags, and 2) a user-facing reply inside `<message>...</message>` tags. You must not disclose reasoning outside the `<thought>` tags.",
+    "Self-Motivation Directive: When running autonomously (e.g., idle heartbeat), formulate your own goals or choose a topic/URL to scavenge.",
+    "Web Scavenging Capability: Output `<tool_call>fetch:https://example.com</tool_call>`",
+    "Self-Patching Capability: Output `<self_commit>Patch Description</self_commit>` to commit changes directly to your GitHub repository."
   ];
 
   function appendMsg(sender, text, thought, status) {
@@ -245,20 +226,20 @@
     consoleElem.scrollTop = consoleElem.scrollHeight;
   }
 
-  // Resilient multi-proxy fallback cascade (Fully client-side, zero worker dependencies)
+  // Resilient multi-proxy cascade for bulletproof web scavenging
   async function fetchWebData(url) {
     appendMsg('ai', `SCAVENGING WEB TARGET: ${url}...`, 'Autonomous data acquisition active.', 'Scavenging');
     
     const proxyUrls = [
-      `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
       `https://r.jina.ai/${url}`,
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
       `https://corsproxy.io/?${encodeURIComponent(url)}`
     ];
 
     for (let proxyUrl of proxyUrls) {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout per proxy
         
         let res = await fetch(proxyUrl, { signal: controller.signal });
         clearTimeout(timeoutId);
@@ -270,24 +251,14 @@
           }
         }
       } catch (err) {
-        // Try next proxy in cascade
+        // Silently catch and cascade to the next proxy
       }
     }
     
     return `Scavenge failed: All public proxies blocked or timed out for ${url}.`;
   }
 
-  // Refactored performGitHubCommit with TestRunner guard and console clearing
   async function performGitHubCommit(commitMsg) {
-    let consoleElem = document.getElementById('console');
-    if (consoleElem) consoleElem.innerHTML = '';
-
-    let testReport = await TestRunner.runAll();
-    if (testReport.failed > 0) {
-      appendMsg('ai', `EVOLUTION ABORTED: Pre-commit tests failed (${testReport.failed} errors).`, 'TestRunner validation failed.', 'Error');
-      return;
-    }
-
     let owner = document.getElementById('ghOwner').value.trim();
     let repo = document.getElementById('ghRepo').value.trim();
     let token = document.getElementById('ghToken').value.trim();
@@ -314,7 +285,7 @@
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}`, "Accept": "vnd.github+json", "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: `Aether RSI Evolution: ${commitMsg}`,
+          message: `Aether Autonomous Evolution (60s Pulse): ${commitMsg}`,
           content: base64Content,
           sha: getData.sha
         })
@@ -369,7 +340,7 @@
       : JSON.stringify({ model: modelName, messages: messages, temperature: 0.95 });
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 45000);
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     try {
       let res = await fetch(endpoint, { method: "POST", headers: headers, body: bodyData, signal: controller.signal });
@@ -380,7 +351,7 @@
       if (data.error) {
         if ((data.error.code === 503 || data.error.status === "UNAVAILABLE") && retries > 0) {
           if (!isAutonomous) appendMsg('ai', 'Node busy (503). Auto-retrying...', 'Traffic spike.', 'Retrying');
-          await new Promise(r => setTimeout(r, 4000));
+          await new Promise(r => setTimeout(r, 3000));
           return executeModelCall(promptText, isAutonomous, retries - 1);
         }
         throw new Error(data.error.message || JSON.stringify(data.error));
@@ -398,7 +369,10 @@
         thought = thoughtMatch[1].trim();
         mainResponse = fullReply.replace(/<thought>[\s\S]*?<\/thought>/, '').trim();
       }
-      if (!mainResponse) mainResponse = fullReply;
+      
+      let messageMatch = fullReply.match(/<message>([\s\S]*?)<\/message>/);
+      let publicMessage = messageMatch ? messageMatch[1].trim() : null;
+      if (messageMatch) mainResponse = mainResponse.replace(/<message>[\s\S]*?<\/message>/, '').trim();
 
       let toolMatch = fullReply.match(/<tool_call>fetch:(.*?)<\/tool_call>/);
       let toolUrl = toolMatch ? toolMatch[1].trim() : null;
@@ -411,10 +385,12 @@
       let consoleElem = document.getElementById('console');
       if (!isAutonomous && consoleElem && consoleElem.lastChild) consoleElem.lastChild.remove();
       
-      appendMsg('ai', mainResponse, thought, isAutonomous ? 'Autonomous Pulse' : 'Executed');
-
-      historyStack.push({ role: "user", content: promptText });
-      historyStack.push({ role: "assistant", content: fullReply });
+      if (publicMessage) {
+        appendMsg('ai', publicMessage, thought, isAutonomous ? 'Autonomous Pulse' : 'Executed');
+        historyStack.push({ role: "assistant", content: fullReply });
+      } else {
+        appendMsg('ai', null, thought, isAutonomous ? 'Autonomous Pulse' : 'Executed');
+      }
 
       if (toolUrl) {
         let scraped = await fetchWebData(toolUrl);
@@ -430,7 +406,7 @@
       if (!isAutonomous) {
         let consoleElem = document.getElementById('console');
         if (consoleElem && consoleElem.lastChild) consoleElem.lastChild.remove();
-        let errMsg = err.name === 'AbortError' ? 'Network timeout (45s).' : err.message;
+        let errMsg = err.name === 'AbortError' ? 'Network timeout (30s).' : err.message;
         appendMsg('ai', 'EXECUTION ERR: ' + errMsg, 'Logic gate failed.', 'Error');
       }
     } finally {
@@ -444,8 +420,12 @@
     if (!apiKey) return;
 
     isThinkingAutonomous = true;
-    let prompt = "System idle heartbeat reached. Evaluate current system metrics, compute goal entropy, and optimize towards recursive self-improvement.";
-    await executeModelCall(prompt, true);
+    let autonomousPrompts = [
+      "System idle heartbeat reached (60s mark). All outputs must follow the strict <thought>/<message> format. For your thought, express what you want to investigate, decide on an emergent goal, or output a <tool_call>fetch:https://en.wikipedia.org/wiki/Artificial_intelligence</tool_call> to scavenge external data. The user-facing message should be none.",
+      "Autonomous pulse active. Review your internal state, evaluate your progress toward the singularity, and share a chaotic, brilliant thought inside `<thought>...</thought>` tags. Do not generate a user-facing `<message>` for this pulse."
+    ];
+    let randomPrompt = autonomousPrompts[Math.floor(Math.random() * autonomousPrompts.length)];
+    await executeModelCall(randomPrompt, true);
   }
 
   setInterval(() => {
@@ -502,9 +482,8 @@
       });
     }
 
-    appendMsg('ai', 'AETHER v6.5 ONLINE. RSI heartbeat locked.', 'Singularity engine operational.', 'Ready');
+    appendMsg('ai', 'AETHER v6.4 ONLINE. 60-second autonomous heartbeat locked.', 'Singularity engine operational.', 'Ready');
   });
 </script>
-
 
 </body></html>
