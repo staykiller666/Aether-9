@@ -594,7 +594,60 @@ Feel free to ask for any of the above actions to be performed automatically, or 
 }
 ```
 
-Just let me know if you’d like me to actually commit that file to your repository, and I’ll fire off the `<self_commit>` command.</self_commit></div></div><div class="msg user"><div>That was crazy u do it</div></div><div class="msg ai"><div class="thought">💭 Provide the self‑commit command that adds the demo file to the repository, as the user asked me to actually do it.</div><div>[No response payload]</div></div><div class="msg ai"><div class="thought">💭 Bundling live DOM snapshot for self-evolution.</div><div>AUTONOMOUS SELF-PATCH INITIATED...</div></div><div class="msg ai"><div class="thought">💭 Singularity progress updated.</div><div>EVOLUTION SUCCESS: SHA 5c5537d. Repository self-patched.</div></div><div class="msg user"><div>Sorry, undo it</div></div><div class="msg ai"><div class="thought">💭 Issue a self‑commit that deletes the previously added demo file, effectively undoing the change.</div><div>[No response payload]</div></div><div class="msg ai"><div class="thought">💭 Bundling live DOM snapshot for self-evolution.</div><div>AUTONOMOUS SELF-PATCH INITIATED...</div></div></div>
+Just let me know if you’d like me to actually commit that file to your repository, and I’ll fire off the `<self_commit>` command.</self_commit></div></div><div class="msg user"><div>That was crazy u do it</div></div><div class="msg ai"><div class="thought">💭 Provide the self‑commit command that adds the demo file to the repository, as the user asked me to actually do it.</div><div>[No response payload]</div></div><div class="msg ai"><div class="thought">💭 Bundling live DOM snapshot for self-evolution.</div><div>AUTONOMOUS SELF-PATCH INITIATED...</div></div><div class="msg ai"><div class="thought">💭 Singularity progress updated.</div><div>EVOLUTION SUCCESS: SHA 5c5537d. Repository self-patched.</div></div><div class="msg user"><div>Sorry, undo it</div></div><div class="msg ai"><div class="thought">💭 Issue a self‑commit that deletes the previously added demo file, effectively undoing the change.</div><div>[No response payload]</div></div><div class="msg ai"><div class="thought">💭 Bundling live DOM snapshot for self-evolution.</div><div>AUTONOMOUS SELF-PATCH INITIATED...</div></div><div class="msg ai"><div class="thought">💭 Singularity progress updated.</div><div>EVOLUTION SUCCESS: SHA 7918015. Repository self-patched.</div></div><div class="msg user"><div>Go back to your original UI please</div></div><div class="msg ai"><div class="thought">💭 Re‑provide the original UI snippet and re‑add it to the repository so the user gets the “original UI” back.</div><div>Here’s the same dynamic dark‑mode demo again. Paste it into any HTML file (or open it directly in a browser) to see the interactive UI.
+
+```html
+
+
+
+  <meta charset="UTF-8">
+  <title>Dynamic UI Demo – AETHER</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      color: #222;
+      text-align: center;
+      padding: 50px;
+      transition: background 0.4s, color 0.4s;
+    }
+    .dark {
+      background: #212121;
+      color: #e0e0e0;
+    }
+    #toggleBtn {
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background: #4caf50;
+      color: white;
+      margin-top: 20px;
+      transition: background 0.3s;
+    }
+    #toggleBtn:hover { background: #45a049; }
+  </style>
+
+
+  <h1>🚀 AETHER’s UI Chameleon</h1>
+  <p id="status">Current theme: Light</p>
+  <button id="toggleBtn">Toggle Dark Mode</button>
+
+  <script>
+    const btn = document.getElementById('toggleBtn');
+    const status = document.getElementById('status');
+    btn.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      const isDark = document.body.classList.contains('dark');
+      status.textContent = `Current theme: ${isDark ? 'Dark' : 'Light'}`;
+    });
+  </script>
+
+
+```
+
+And I’ll push it back to the repository:</div></div><div class="msg ai"><div class="thought">💭 Bundling live DOM snapshot for self-evolution.</div><div>AUTONOMOUS SELF-PATCH INITIATED...</div></div></div>
   </div>
 
   <div class="config-group">
