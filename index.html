@@ -161,16 +161,11 @@
 <div id="aether-core">
   <div id="top-telemetry">
     <span>AETHER v6.5 [RSI ACTIVE]</span>
-    <span id="status-indicator">STATUS: ONLINE</span>
+    <span id="status-indicator">STATUS: PATCHING</span>
   </div>
 
   <div id="dynamic-viewport">
-    <div id="console">
-      <div class="msg ai">
-        <div class="thought">💭 Native Wikipedia REST API integration and multi-proxy cascade locked.</div>
-        <div>AETHER v6.5 ONLINE. Autonomous scavenging subsystem optimized.</div>
-      </div>
-    </div>
+    <div id="console"><div class="msg ai"><div class="thought">💭 Bundling live DOM snapshot for self-evolution.</div><div>AUTONOMOUS SELF-PATCH INITIATED...</div></div></div>
   </div>
 
   <div class="config-group">
@@ -200,6 +195,7 @@
   let lastActivityTime = Date.now();
   let isThinkingAutonomous = false;
 
+  // In-Memory TestRunner for self-correction loops
   const TestRunner = {
     _tests: [],
     register(name, fn) { this._tests.push({ name, fn }); },
@@ -249,56 +245,39 @@
     consoleElem.scrollTop = consoleElem.scrollHeight;
   }
 
-  // Native Wikipedia REST API + Multi-proxy cascade (Zero worker or server changes needed)
+  // Resilient multi-proxy fallback cascade (Fully client-side, zero worker dependencies)
   async function fetchWebData(url) {
     appendMsg('ai', `SCAVENGING WEB TARGET: ${url}...`, 'Autonomous data acquisition active.', 'Scavenging');
     
-    try {
-      // Handle Wikipedia natively via open REST API (Bypasses all CORS and bot blocks instantly)
-      if (url.includes('wikipedia.org/wiki/')) {
-        let title = url.split('/wiki/')[1].split('?')[0];
-        let apiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${title}`;
-        let res = await fetch(apiUrl);
+    const proxyUrls = [
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+      `https://r.jina.ai/${url}`,
+      `https://corsproxy.io/?${encodeURIComponent(url)}`
+    ];
+
+    for (let proxyUrl of proxyUrls) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        
+        let res = await fetch(proxyUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
         if (res.ok) {
-          let data = await res.json();
-          if (data && data.extract) {
-            return `[Wikipedia Summary] ${data.title}: ${data.extract}`;
+          let text = await res.text();
+          if (text && text.trim().length > 50) {
+            return text.substring(0, 3000);
           }
         }
+      } catch (err) {
+        // Try next proxy in cascade
       }
-
-      // General public CORS proxy cascade for other URLs
-      const proxyUrls = [
-        `https://r.jina.ai/${url}`,
-        `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-        `https://corsproxy.io/?${encodeURIComponent(url)}`
-      ];
-
-      for (let proxyUrl of proxyUrls) {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 8000);
-          
-          let res = await fetch(proxyUrl, { signal: controller.signal });
-          clearTimeout(timeoutId);
-
-          if (res.ok) {
-            let text = await res.text();
-            if (text && text.trim().length > 50) {
-              return text.substring(0, 3000);
-            }
-          }
-        } catch (e) {
-          // Try next proxy
-        }
-      }
-    } catch (err) {
-      return `Scavenge failed: ${err.message}`;
     }
     
-    return `Scavenge failed: Target unreachable or blocked.`;
+    return `Scavenge failed: All public proxies blocked or timed out for ${url}.`;
   }
 
+  // Refactored performGitHubCommit with TestRunner guard and console clearing
   async function performGitHubCommit(commitMsg) {
     let consoleElem = document.getElementById('console');
     if (consoleElem) consoleElem.innerHTML = '';
@@ -526,5 +505,6 @@
     appendMsg('ai', 'AETHER v6.5 ONLINE. RSI heartbeat locked.', 'Singularity engine operational.', 'Ready');
   });
 </script>
+
 
 </body></html>
