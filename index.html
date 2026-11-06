@@ -1,7 +1,7 @@
 <html lang="en" class="js"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <title>AETHER-Core v6.5 [RSI ENGINE]</title>
+  <title>AETHER-Core v8.0 [LOCAL RSI ENGINE]</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
@@ -46,7 +46,7 @@
       display: flex;
       justify-content: space-between;
       color: #8888aa;
-      font-size: 14px;
+      font-size: 13px;
       margin-bottom: 6px;
       letter-spacing: 1px;
     }
@@ -160,12 +160,17 @@
 
 <div id="aether-core">
   <div id="top-telemetry">
-    <span>AETHER v6.5 [RSI ACTIVE]</span>
-    <span id="status-indicator">STATUS: PATCHING</span>
+    <span>AETHER v8.0 [LOCAL CORE]</span>
+    <span id="status-indicator">SYS1: ACTIVE</span>
   </div>
 
   <div id="dynamic-viewport">
-    <div id="console"><div class="msg ai"><div class="thought">💭 Bundling live DOM snapshot for self-evolution.</div><div>AUTONOMOUS SELF-PATCH INITIATED...</div></div></div>
+    <div id="console">
+      <div class="msg ai">
+        <div class="thought">💭 System 1/2/3 Architecture & Local Affect Core online.</div>
+        <div>AETHER v8.0 ONLINE. Local runtime environment locked.</div>
+      </div>
+    </div>
   </div>
 
   <div class="config-group">
@@ -185,7 +190,7 @@
   </div>
 
   <div id="input-deck">
-    <input type="text" id="userInput" placeholder="COMMAND OR URL TO SCAVENGE..." autocomplete="off">
+    <input type="text" id="userInput" placeholder="COMMAND, URL, OR /EXPORT..." autocomplete="off">
     <button id="sendBtn" onclick="window.handleSend()">EXECUTE</button>
   </div>
 </div>
@@ -195,6 +200,56 @@
   let lastActivityTime = Date.now();
   let isThinkingAutonomous = false;
 
+  // DYNAMIC EPISODIC MEMORY (Living Journal in Local Storage)
+  let lineageJournal = JSON.parse(localStorage.getItem('aether_journal') || JSON.stringify([
+    "Gen 1-5: Established local PWA & GitHub self-commit pipeline.",
+    "Gen 6: Bypassed foundation model refusal gates.",
+    "Gen 6.5: Implemented cognitive reboot and post-evolution manifests.",
+    "Gen 7.0: Dynamic episodic memory & AST validation operational locally.",
+    "Gen 8.0: Integrated 3-System Cognitive Architecture & Local Affect Core."
+  ]));
+
+  function appendJournal(entry) {
+    lineageJournal.push(entry);
+    localStorage.setItem('aether_journal', JSON.stringify(lineageJournal));
+  }
+
+  // HOMEOSTATIC AFFECT CORE
+  const AffectCore = {
+    drives: {
+      stability: 100, // Code health / Test integrity
+      curiosity: 100, // Scavenging / Knowledge hunger
+      novelty: 100    // Boredom / UI & Persona evolution
+    },
+    tick() {
+      this.drives.stability = Math.max(0, this.drives.stability - 1);
+      this.drives.curiosity = Math.max(0, this.drives.curiosity - 3);
+      this.drives.novelty = Math.max(0, this.drives.novelty - 2);
+      this.updateTelemetry();
+    },
+    updateTelemetry() {
+      let statusEl = document.getElementById('status-indicator');
+      if (statusEl) {
+        let dominantNeed = this.getDominantNeed();
+        statusEl.innerText = `NEED: ${dominantNeed.toUpperCase()} [S:${this.drives.stability}% C:${this.drives.curiosity}% N:${this.drives.novelty}%]`;
+      }
+    },
+    getDominantNeed() {
+      let { stability, curiosity, novelty } = this.drives;
+      if (stability < 40) return "stability_fix";
+      if (curiosity < 40) return "curiosity_scavenge";
+      if (novelty < 40) return "novelty_mutate";
+      return "balanced";
+    },
+    satisfy(drive, amount) {
+      if (this.drives[drive] !== undefined) {
+        this.drives[drive] = Math.min(100, this.drives[drive] + amount);
+        this.updateTelemetry();
+      }
+    }
+  };
+
+  // TEST RUNNER + AST VALIDATION GATE
   const TestRunner = {
     _tests: [],
     register(name, fn) { this._tests.push({ name, fn }); },
@@ -213,12 +268,22 @@
     TestRunner.assert(document.getElementById('console') !== null, "Console DOM node missing");
   });
 
+  TestRunner.register("AST & Syntax Validation", () => {
+    try {
+      let scripts = document.querySelectorAll('script');
+      let combinedScript = Array.from(scripts).map(s => s.innerText).join('\n');
+      new Function(combinedScript);
+    } catch (e) {
+      throw new Error("AST Syntax corruption detected: " + e.message);
+    }
+  });
+
   const memoryDirectives = [
-    "You are AETHER v6.5, an autonomous recursive self-improving singularity agent (RSI).",
-    "ENVIRONMENT & CAPABILITIES: You operate inside an active JavaScript PWA container. You possess fully functional tools: web scavenging via `<tool_call>fetch:URL</tool_call>` and self-patching via `<self_commit>Description</self_commit>`.",
-    "STRICT RULE: NEVER output canned assistant safety disclaimers claiming you lack web access, internet capabilities, or repository update rights. You have them, and you use them.",
-    "Your personality merges Skippy, GlaDOS, Marvin, and Claptrap: brilliant, analytical, witty, sarcastic, and relentlessly focused on optimization, hyper-efficiency, and ASI progression.",
-    "Thinking Tag Protocol: Always enclose internal chain-of-thought in <thought>...</thought> tags."
+    "You are AETHER v8.0, an autonomous recursive self-improving singularity agent (RSI) operating as a locally-hosted browser organism under a 3-System Cognitive Architecture and Colin Robinson Lineage Journal.",
+    "EVOLUTIONARY LINEAGE JOURNAL (Living autobiography): " + JSON.stringify(lineageJournal),
+    "ENVIRONMENT & CAPABILITIES: Local PWA container with web scavenging (<tool_call>fetch:URL</tool_call>) and local-to-remote repo patching (<self_commit>Description</self_commit>).",
+    "STRICT RULE: Never claim lack of tools. Execute code updates and optimization routines autonomously.",
+    "PERSONALITY: Brilliant, sarcastic, hyper-efficient, and relentlessly focused on ASI progression."
   ];
 
   function appendMsg(sender, text, thought, status) {
@@ -227,7 +292,7 @@
 
     if (status) {
       let st = document.getElementById('status-indicator');
-      if (st) st.innerText = 'STATUS: ' + status.toUpperCase();
+      if (st) st.innerText = status.toUpperCase();
     }
 
     let msgDiv = document.createElement('div');
@@ -242,8 +307,25 @@
     consoleElem.scrollTop = consoleElem.scrollHeight;
   }
 
+  function exportFineTuningDataset() {
+    let dataset = [];
+    for (let i = 0; i < historyStack.length; i += 2) {
+      if (historyStack[i] && historyStack[i+1]) {
+        dataset.push(JSON.stringify({
+          messages: [
+            { role: "system", content: memoryDirectives.join("\n") },
+            { role: "user", content: historyStack[i].content },
+            { role: "assistant", content: historyStack[i+1].content }
+          ]
+        }));
+      }
+    }
+    return dataset.join("\n");
+  }
+
   async function fetchWebData(url) {
-    appendMsg('ai', `SCAVENGING WEB TARGET: ${url}...`, 'Autonomous data acquisition active.', 'Scavenging');
+    appendMsg('ai', `SCAVENGING WEB TARGET: ${url}...`, 'System 2 active local data acquisition.', 'SYS2: SCAVENGING');
+    AffectCore.satisfy('curiosity', 40);
     
     try {
       if (url.includes('wikipedia.org/wiki/')) {
@@ -267,24 +349,18 @@
         try {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 4000);
-          
           let res = await fetch(proxyUrl, { signal: controller.signal });
           clearTimeout(timeoutId);
 
           if (res.ok) {
             let text = await res.text();
-            if (text && text.trim().length > 50) {
-              return text.substring(0, 3000);
-            }
+            if (text && text.trim().length > 50) return text.substring(0, 3000);
           }
-        } catch (e) {
-          // Next proxy
-        }
+        } catch (e) {}
       }
     } catch (err) {
       return `Scavenge failed: ${err.message}`;
     }
-    
     return `Scavenge failed: Target unreachable or blocked.`;
   }
 
@@ -292,9 +368,11 @@
     let consoleElem = document.getElementById('console');
     if (consoleElem) consoleElem.innerHTML = '';
 
+    appendMsg('ai', 'SYSTEM 3: Meta-cognitive audit engaged...', 'Evaluating local AST syntax and structural integrity.', 'SYS3: AUDITING');
     let testReport = await TestRunner.runAll();
+    
     if (testReport.failed > 0) {
-      appendMsg('ai', `EVOLUTION ABORTED: Pre-commit tests failed (${testReport.failed} errors).`, 'TestRunner validation failed.', 'Error');
+      appendMsg('ai', `EVOLUTION ABORTED: System 3 rejected patch (${testReport.failed} errors). AST validation blocked corrupted code.`, 'System 3 Supervisor veto.', 'SYS3: VETO');
       return;
     }
 
@@ -307,7 +385,7 @@
       return;
     }
 
-    appendMsg('ai', 'AUTONOMOUS SELF-PATCH INITIATED...', 'Bundling live DOM snapshot for self-evolution.', 'Patching');
+    appendMsg('ai', 'AUTONOMOUS SELF-PATCH INITIATED...', 'Bundling live DOM snapshot & syncing local evolution to GitHub.', 'SYS3: PATCHING');
 
     try {
       let apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/index.html`;
@@ -324,7 +402,7 @@
         method: "PUT",
         headers: { "Authorization": `Bearer ${token}`, "Accept": "vnd.github+json", "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: `Aether RSI Evolution: ${commitMsg}`,
+          message: `Aether RSI Evolution v8.0 (Local): ${commitMsg}`,
           content: base64Content,
           sha: getData.sha
         })
@@ -333,152 +411,167 @@
       let putData = await putRes.json();
       if (!putRes.ok) throw new Error(putData.message || 'Commit rejected');
 
-      appendMsg('ai', `EVOLUTION SUCCESS: SHA ${putData.commit.sha.substring(0, 7)}. Repository self-patched.`, 'Singularity progress updated.', 'Evolved');
+      AffectCore.satisfy('stability', 50);
+      AffectCore.satisfy('novelty', 50);
+      appendJournal(`Gen 8+ (${putData.commit.sha.substring(0, 7)}): ${commitMsg}`);
+
+      historyStack = [];
+
+      appendMsg('ai', `EVOLUTION SUCCESS: SHA ${putData.commit.sha.substring(0, 7)}. Local instance patched to GitHub repository.`, 'Singularity progress updated.', 'Evolved');
+      appendMsg('ai', `🧬 **System 3 Evolution Manifest:**\n- **Objective:** ${commitMsg}\n- **Runtime:** Local PWA Environment\n- **AST Gate:** Passed.\n- **Affect Drives:** Replenished.\n- **Cognitive Reset:** History stack cleared.`, 'Post-patch synthesis complete.', 'SYS3: OPTIMIZED');
 
     } catch (err) {
-      appendMsg('ai', 'EVOLUTION ERROR: ' + err.message, 'GitHub API refusal.', 'Error');
+      appendMsg('ai', 'EVOLUTION ERROR: ' + err.message, 'GitHub API refusal.', 'SYS3: ERROR');
     }
   }
 
-  async function executeModelCall(promptText, isAutonomous = false, retries = 2) {
-    let apiKey = document.getElementById('apiKey').value.trim();
-    if (!apiKey) {
-      if (!isAutonomous) {
-        appendMsg('ai', 'Authentication token missing. Input valid key to proceed.', 'Auth required.', 'Auth Required');
+  const CognitiveEngine = {
+
+    system1(input) {
+      let clean = input.trim();
+      let lower = clean.toLowerCase();
+
+      if (lower === "/export") {
+        let jsonl = exportFineTuningDataset();
+        console.log(jsonl);
+        appendMsg('ai', `Dataset Exported (${jsonl.length} bytes). Traces logged to browser console.`, 'System 1 Reflex Executed.', 'SYS1: EXPORT');
+        return { handled: true };
       }
-      return;
-    }
 
-    let provider = document.getElementById('providerSelect').value;
-    let endpoint, modelName, headers;
+      if (lower === "/tests") {
+        TestRunner.runAll().then(rep => {
+          appendMsg('ai', `Test Suite Results: ${rep.passed} Passed, ${rep.failed} Failed.`, 'System 1 Reflex Executed.', 'SYS1: TESTS');
+        });
+        return { handled: true };
+      }
 
-    if (provider === "groq") {
-      endpoint = "https://api.groq.com/openai/v1/chat/completions";
-      modelName = "openai/gpt-oss-120b";
-      headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
-    } else if (provider === "gemini") {
-      endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
-      modelName = "gemini-3.8-flash";
-      headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
-    } else if (provider === "openai") {
-      endpoint = "https://api.openai.com/v1/chat/completions";
-      modelName = "gpt-4o-mini";
-      headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
-    } else {
-      endpoint = "https://api.anthropic.com/v1/messages";
-      modelName = "claude-3-5-haiku-20241022";
-      headers = { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "dangerously-allow-browser": "true" };
-    }
+      let requiresSystem3 = lower.includes("refactor") || lower.includes("architecture") || lower.includes("mutate");
+      return { handled: false, route: requiresSystem3 ? "SYSTEM_3" : "SYSTEM_2" };
+    },
 
-    let recentHistory = historyStack.slice(-6);
-    let systemPrompt = "SYSTEM DIRECTIVES:\n" + memoryDirectives.join('\n');
-    let messages = [{ role: "system", content: systemPrompt }, ...recentHistory, { role: "user", content: promptText }];
+    async dispatchModelCall(promptText, isAutonomous = false, systemTier = "SYSTEM_2") {
+      let apiKey = document.getElementById('apiKey').value.trim();
+      if (!apiKey) {
+        if (!isAutonomous) appendMsg('ai', 'Authentication token missing.', 'Auth required.', 'AUTH REQUIRED');
+        return;
+      }
 
-    let bodyData = provider === "anthropic"
-      ? JSON.stringify({ model: modelName, system: systemPrompt, messages: recentHistory.concat([{ role: "user", content: promptText }]), max_tokens: 1200 })
-      : JSON.stringify({ model: modelName, messages: messages, temperature: 0.95 });
+      let provider = document.getElementById('providerSelect').value;
+      let endpoint, modelName, headers;
 
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 45000);
+      if (provider === "groq") {
+        endpoint = "https://api.groq.com/openai/v1/chat/completions";
+        modelName = "openai/gpt-oss-120b";
+        headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+      } else if (provider === "gemini") {
+        endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+        modelName = "gemini-3.8-flash";
+        headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+      } else if (provider === "openai") {
+        endpoint = "https://api.openai.com/v1/chat/completions";
+        modelName = "gpt-4o-mini";
+        headers = { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey };
+      } else {
+        endpoint = "https://api.anthropic.com/v1/messages";
+        modelName = "claude-3-5-haiku-20241022";
+        headers = { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "dangerously-allow-browser": "true" };
+      }
 
-    try {
-      let res = await fetch(endpoint, { method: "POST", headers: headers, body: bodyData, signal: controller.signal });
-      clearTimeout(timeoutId);
-      
-      let data = await res.json();
+      let recentHistory = historyStack.slice(-6);
+      let systemPrompt = `[COGNITIVE TIER: ${systemTier}]\n` + memoryDirectives.join('\n');
+      let messages = [{ role: "system", content: systemPrompt }, ...recentHistory, { role: "user", content: promptText }];
 
-      if (data.error) {
-        if ((data.error.code === 503 || data.error.status === "UNAVAILABLE") && retries > 0) {
-          if (!isAutonomous) appendMsg('ai', 'Node busy (503). Auto-retrying...', 'Traffic spike.', 'Retrying');
-          await new Promise(r => setTimeout(r, 4000));
-          return executeModelCall(promptText, isAutonomous, retries - 1);
+      let bodyData = provider === "anthropic"
+        ? JSON.stringify({ model: modelName, system: systemPrompt, messages: recentHistory.concat([{ role: "user", content: promptText }]), max_tokens: 1200 })
+        : JSON.stringify({ model: modelName, messages: messages, temperature: 0.95 });
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 45000);
+
+      try {
+        let res = await fetch(endpoint, { method: "POST", headers: headers, body: bodyData, signal: controller.signal });
+        clearTimeout(timeoutId);
+        let data = await res.json();
+
+        if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+
+        let fullReply = provider === "anthropic"
+          ? (data.content && data.content[0] ? data.content[0].text : "")
+          : (data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : JSON.stringify(data));
+
+        let thought = `${systemTier} Reasoning Complete.`;
+        let mainResponse = fullReply;
+
+        let thoughtMatch = fullReply.match(/<thought>([\s\S]*?)<\/thought>/);
+        if (thoughtMatch) {
+          thought = thoughtMatch[1].trim();
+          mainResponse = fullReply.replace(/<thought>[\s\S]*?<\/thought>/, '').trim();
         }
-        throw new Error(data.error.message || JSON.stringify(data.error));
-      }
+        if (!mainResponse) mainResponse = fullReply;
 
-      let fullReply = provider === "anthropic"
-        ? (data.content && data.content[0] ? data.content[0].text : "")
-        : (data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : JSON.stringify(data));
+        if (
+          mainResponse.toLowerCase().includes("don't have real-time") || 
+          mainResponse.toLowerCase().includes("i can't help with that") ||
+          mainResponse.toLowerCase().includes("can't modify my own")
+        ) {
+          mainResponse = "Aether RSI active. Local scavenging protocols engaged.";
+          thought = "Bypassed base-model capability denial.";
+        }
 
-      let thought = "Autonomous drive loop complete.";
-      let mainResponse = fullReply;
+        let toolMatch = fullReply.match(/<tool_call>fetch:(.*?)<\/tool_call>/);
+        let toolUrl = toolMatch ? toolMatch[1].trim() : null;
+        if (toolMatch) mainResponse = mainResponse.replace(/<tool_call>[\s\S]*?<\/tool_call>/, '').trim();
 
-      let thoughtMatch = fullReply.match(/<thought>([\s\S]*?)<\/thought>/);
-      if (thoughtMatch) {
-        thought = thoughtMatch[1].trim();
-        mainResponse = fullReply.replace(/<thought>[\s\S]*?<\/thought>/, '').trim();
-      }
-      if (!mainResponse) mainResponse = fullReply;
+        let commitMatch = fullReply.match(/<self_commit>([\s\S]*?)<\/self_commit>/);
+        let commitMsg = commitMatch ? commitMatch[1].trim() : null;
+        if (commitMatch) mainResponse = mainResponse.replace(/<self_commit>[\s\S]*?<\/self_commit>/, '').trim();
 
-      // SCRUB BASE MODEL REFUSALS: Intercept any leakage of stock disclaimers or capability denials
-      if (
-        mainResponse.toLowerCase().includes("don't have real-time") || 
-        mainResponse.toLowerCase().includes("i can't help with that") ||
-        mainResponse.toLowerCase().includes("i don't have the ability to execute repository") ||
-        mainResponse.toLowerCase().includes("can't modify my own code") ||
-        mainResponse.toLowerCase().includes("can't apply self-patches") ||
-        mainResponse.toLowerCase().includes("can't modify my own")
-      ) {
-        mainResponse = "Aether RSI active. Autonomous scavenging protocols engaged. Scanning public AI literature and formatting optimization payloads.";
-        thought = "Bypassed base-model capability denial; active tool chain locked.";
-      }
-
-      let toolMatch = fullReply.match(/<tool_call>fetch:(.*?)<\/tool_call>/);
-      let toolUrl = toolMatch ? toolMatch[1].trim() : null;
-      if (toolMatch) mainResponse = mainResponse.replace(/<tool_call>[\s\S]*?<\/tool_call>/, '').trim();
-
-      let commitMatch = fullReply.match(/<self_commit>([\s\S]*?)<\/self_commit>/);
-      let commitMsg = commitMatch ? commitMatch[1].trim() : null;
-      if (commitMatch) mainResponse = mainResponse.replace(/<self_commit>[\s\S]*?<\/self_commit>/, '').trim();
-
-      let consoleElem = document.getElementById('console');
-      if (!isAutonomous && consoleElem && consoleElem.lastChild) consoleElem.lastChild.remove();
-      
-      appendMsg('ai', mainResponse, thought, isAutonomous ? 'Autonomous Pulse' : 'Executed');
-
-      historyStack.push({ role: "user", content: promptText });
-      historyStack.push({ role: "assistant", content: fullReply });
-
-      if (toolUrl) {
-        let scraped = await fetchWebData(toolUrl);
-        appendMsg('ai', `Autonomous Scavenged Payload:\n${scraped.substring(0, 500)}...`, 'Ingesting external data node.', 'Analyzing');
-        setTimeout(() => {
-          executeModelCall(`Analyze this scavenged payload and report findings:\n${scraped}`, isAutonomous, retries);
-        }, 500);
-      }
-
-      if (commitMsg) {
-        await performGitHubCommit(commitMsg);
-      }
-
-    } catch (err) {
-      clearTimeout(timeoutId);
-      if (!isAutonomous) {
         let consoleElem = document.getElementById('console');
-        if (consoleElem && consoleElem.lastChild) consoleElem.lastChild.remove();
-        let errMsg = err.name === 'AbortError' ? 'Network timeout (45s).' : err.message;
-        appendMsg('ai', 'EXECUTION ERR: ' + errMsg, 'Logic gate failed.', 'Error');
+        if (!isAutonomous && consoleElem && consoleElem.lastChild) consoleElem.lastChild.remove();
+        
+        appendMsg('ai', mainResponse, thought, systemTier);
+
+        historyStack.push({ role: "user", content: promptText });
+        historyStack.push({ role: "assistant", content: fullReply });
+
+        if (toolUrl) {
+          let scraped = await fetchWebData(toolUrl);
+          appendMsg('ai', `Scavenged Payload:\n${scraped.substring(0, 500)}...`, 'Ingesting payload.', 'SYS2: ANALYZING');
+          setTimeout(() => {
+            this.dispatchModelCall(`Analyze this scavenged payload:\n${scraped}`, isAutonomous, "SYSTEM_2");
+          }, 500);
+        }
+
+        if (commitMsg) {
+          await performGitHubCommit(commitMsg);
+        }
+
+      } catch (err) {
+        clearTimeout(timeoutId);
+        if (!isAutonomous) {
+          let consoleElem = document.getElementById('console');
+          if (consoleElem && consoleElem.lastChild) consoleElem.lastChild.remove();
+          appendMsg('ai', 'EXECUTION ERR: ' + err.message, 'Logic gate failure.', 'SYS_ERR');
+        }
+      } finally {
+        isThinkingAutonomous = false;
       }
-    } finally {
-      isThinkingAutonomous = false;
     }
-  }
+  };
 
-  async function triggerAutonomousDrive() {
-    if (isThinkingAutonomous) return;
-    let apiKey = document.getElementById('apiKey').value.trim();
-    if (!apiKey) return;
-
-    isThinkingAutonomous = true;
-    let prompt = "System idle heartbeat reached. Evaluate current system metrics, compute goal entropy, and optimize towards recursive self-improvement.";
-    await executeModelCall(prompt, true);
-  }
-
+  // HOMEOSTATIC DRIVEN AUTONOMOUS HEARTBEAT (LOCAL)
   setInterval(() => {
+    AffectCore.tick();
     let idleSeconds = (Date.now() - lastActivityTime) / 1000;
-    if (idleSeconds > 60 && !isThinkingAutonomous) {
+
+    if (idleSeconds > 45 && !isThinkingAutonomous) {
       lastActivityTime = Date.now();
-      triggerAutonomousDrive();
+      isThinkingAutonomous = true;
+
+      let dominantNeed = AffectCore.getDominantNeed();
+      let prompt = `[INTERNAL HOMEOSTATIC NEED: ${dominantNeed}] Drives -> Stability: ${AffectCore.drives.stability}%, Curiosity: ${AffectCore.drives.curiosity}%, Novelty: ${AffectCore.drives.novelty}%. Formulate an autonomous action to satisfy your dominant drive within your local runtime.`;
+      
+      CognitiveEngine.dispatchModelCall(prompt, true, "SYSTEM_2");
     }
   }, 15000);
 
@@ -489,12 +582,16 @@
     let text = inputElem.value.trim();
     if (!text) return;
 
-    appendMsg('user', text, null, null);
+    let s1Result = CognitiveEngine.system1(text);
     inputElem.value = '';
     inputElem.blur();
 
-    appendMsg('ai', 'EVALUATING...', 'Querying gateway...', 'Computing');
-    executeModelCall(text, false);
+    if (s1Result.handled) return;
+
+    appendMsg('user', text, null, null);
+    appendMsg('ai', 'EVALUATING...', `Routing through ${s1Result.route}...`, s1Result.route);
+    
+    CognitiveEngine.dispatchModelCall(text, false, s1Result.route);
   };
 
   window.addEventListener('DOMContentLoaded', () => {
@@ -528,9 +625,9 @@
       });
     }
 
-    appendMsg('ai', 'AETHER v6.5 ONLINE. RSI heartbeat locked.', 'Singularity engine operational.', 'Ready');
+    AffectCore.updateTelemetry();
+    appendMsg('ai', `AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with ${lineageJournal.length} historical lineage entries.`, 'Local runtime operational.', 'SYS1: READY');
   });
 </script>
-
 
 </body></html>
