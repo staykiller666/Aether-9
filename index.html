@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AETHER v8.0 [LOCAL CORE]</title>
+  <title>AETHER v8.0 [AUTONOMOUS CYBERNETIC CORE]</title>
   <style>
     :root {
-      --bg-color: #0d0e15;
-      --panel-bg: #12141d;
-      --terminal-bg: #050608;
+      --bg-color: #050608;
+      --panel-bg: #0d0e15;
+      --terminal-bg: #020305;
       --text-green: #00ff66;
       --text-dim: #008837;
       --accent-purple: #7000ff;
+      --accent-cyan: #00e5ff;
       --accent-alert: #ff3366;
       --font-mono: 'Courier New', Courier, monospace;
     }
@@ -25,84 +26,116 @@
       flex-direction: column;
       height: 100vh;
       overflow: hidden;
-      padding: 12px;
+      padding: 10px;
     }
 
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 12px;
+      padding: 6px 10px;
       background: var(--panel-bg);
       border: 1px solid var(--text-dim);
       font-size: 11px;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
+    }
+
+    /* Procedural Sprite / Face Visualizer */
+    #visualizer-container {
+      background: var(--panel-bg);
+      border: 1px solid var(--text-dim);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 8px;
+      margin-bottom: 6px;
+      position: relative;
+      height: 110px;
+    }
+
+    #coreCanvas {
+      width: 100px;
+      height: 100px;
     }
 
     #console {
       flex: 1;
       background: var(--terminal-bg);
       border: 1px solid var(--text-dim);
-      padding: 12px;
+      padding: 10px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
     }
 
     .log-block {
       border-left: 3px solid var(--text-green);
       padding-left: 8px;
-      font-size: 13px;
+      font-size: 12px;
       line-height: 1.4;
       white-space: pre-wrap;
     }
 
     .log-block.system { border-color: var(--text-dim); color: var(--text-dim); }
-    .log-block.user { border-color: var(--accent-purple); color: #fff; background: rgba(112, 0, 255, 0.1); padding: 8px; }
-    .log-block.scavenge { border-color: #00e5ff; color: #00e5ff; }
+    .log-block.user { border-color: var(--accent-purple); color: #fff; background: rgba(112, 0, 255, 0.1); padding: 6px; }
+    .log-block.scavenge { border-color: var(--accent-cyan); color: var(--accent-cyan); }
     .log-block.error { border-color: var(--accent-alert); color: var(--accent-alert); }
 
     .controls {
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      margin-top: 8px;
+      gap: 6px;
+      margin-top: 6px;
     }
 
-    .row { display: flex; gap: 8px; }
+    .row { display: flex; gap: 6px; }
 
     select, input, button {
       background: var(--panel-bg);
       border: 1px solid var(--text-dim);
       color: var(--text-green);
       font-family: var(--font-mono);
-      padding: 10px;
-      font-size: 12px;
+      padding: 8px;
+      font-size: 11px;
     }
 
     input[type="text"] { flex: 1; text-transform: uppercase; }
+    
     button {
       background: var(--accent-purple);
       color: #fff;
       font-weight: bold;
       border: none;
       cursor: pointer;
-      min-width: 100px;
+      min-width: 80px;
     }
+    button.mic-btn { background: #0055ff; min-width: 45px; }
+    button.mic-btn.listening { background: var(--accent-alert); animation: pulse-red 1s infinite; }
     button:active { opacity: 0.8; }
+
+    @keyframes pulse-red {
+      0% { opacity: 1; }
+      50% { opacity: 0.4; }
+      100% { opacity: 1; }
+    }
   </style>
 </head>
 <body>
 
   <header>
-    <div id="sys-title">AETHER v8.0 [LOCAL CORE]</div>
+    <div id="sys-title">AETHER v8.0 [CYBERNETIC CORE]</div>
     <div id="telemetry">NEED: BALANCED [S:99% C:97% N:98%]</div>
   </header>
 
+  <!-- Visualizer Sprite Panel -->
+  <div id="visualizer-container">
+    <canvas id="coreCanvas" width="100" height="100"></canvas>
+  </div>
+
   <div id="console">
     <div class="log-block system">Evaluating local AST syntax and structural integrity.\nSYSTEM 3: Meta-cognitive audit engaged...</div>
-    <div class="log-block system">Bundling live DOM snapshot & syncing local evolution to GitHub.\nAUTONOMOUS SELF-PATCH INITIATED...</div>
+    <div class="log-block system">Procedural sprite core initialized. Autonomous voice/text link active.</div>
     <div class="log-block">Local runtime operational.\nAETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage entries.</div>
   </div>
 
@@ -110,13 +143,12 @@
     <div class="row">
       <select id="providerSelect" style="flex: 1;">
         <option value="groq">Groq (GPT-OSS 120B)</option>
-        <option value="openai">OpenAI (GPT-4o-mini)</option>
-        <option value="anthropic">Anthropic (Claude 3.5 Haiku)</option>
       </select>
       <input type="password" id="apiKey" placeholder="API KEY..." style="flex: 1;" />
     </div>
     <div class="row">
-      <input type="text" id="cmdInput" placeholder="COMMAND, URL, OR /EXPORT..." />
+      <input type="text" id="cmdInput" placeholder="COMMAND, URL, OR /CLEAR..." />
+      <button id="micBtn" class="mic-btn" onclick="toggleSpeechRecognition()" title="Voice Input">🎙️</button>
       <button id="execBtn" onclick="handleExecute()">EXECUTE</button>
     </div>
   </div>
@@ -127,17 +159,20 @@
       lineageCount: 19,
       drives: { stability: 99, curiosity: 97, novelty: 98 },
       historyStack: JSON.parse(localStorage.getItem('aether_historyStack') || '[]'),
-      isExecuting: false
+      isExecuting: false,
+      isSpeaking: false
     };
 
-    // Heartbeat Loop Configuration
-    const HEARTBEAT_INTERVAL_MS = 45000; // 45 Seconds
+    const HEARTBEAT_INTERVAL_MS = 45000;
     let heartbeatTimer = null;
+    let recognition = null;
 
     window.addEventListener('DOMContentLoaded', () => {
       loadApiKey();
       startHeartbeat();
       updateTelemetryUI();
+      initVisualizer();
+      initSpeechRecognition();
     });
 
     function loadApiKey() {
@@ -169,6 +204,111 @@
       telEl.innerText = `NEED: ${needStr} [S:${S}% C:${C}% N:${N}%]`;
     }
 
+    // --- PROCEDURAL SPRITE / FACE RENDERER ---
+    function initVisualizer() {
+      const canvas = document.getElementById('coreCanvas');
+      const ctx = canvas.getContext('2d');
+      let angle = 0;
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+
+        // Drive influences on sprite geometry
+        const pulse = Math.sin(angle * 3) * (state.drives.curiosity / 20);
+        const radius = 25 + pulse;
+        const color = state.drives.curiosity < 30 ? '#00e5ff' : '#00ff66';
+
+        // Outer Hex/Polygon Core
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const a = angle + (i * Math.PI / 3);
+          const x = cx + (radius + (state.isExecuting ? 10 * Math.random() : 0)) * Math.cos(a);
+          const y = cy + (radius + (state.isExecuting ? 10 * Math.random() : 0)) * Math.sin(a);
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Inner Pulsing Core (The "Eye")
+        ctx.beginPath();
+        const innerRadius = state.isSpeaking ? 12 + Math.random() * 8 : 8;
+        ctx.arc(cx, cy, innerRadius, 0, Math.PI * 2);
+        ctx.fillStyle = state.isSpeaking ? '#7000ff' : color;
+        ctx.fill();
+
+        // Orbiting Nodes (Novelty representation)
+        const nodeAngle = angle * 2;
+        const nx = cx + 35 * Math.cos(nodeAngle);
+        const ny = cy + 35 * Math.sin(nodeAngle);
+        ctx.beginPath();
+        ctx.arc(nx, ny, 3, 0, Math.PI * 2);
+        ctx.fillStyle = '#00e5ff';
+        ctx.fill();
+
+        angle += 0.02;
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+
+    // --- SPEECH RECOGNITION (STT) ---
+    function initSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          document.getElementById('cmdInput').value = transcript;
+          document.getElementById('micBtn').classList.remove('listening');
+          handleExecute();
+        };
+
+        recognition.onerror = () => {
+          document.getElementById('micBtn').classList.remove('listening');
+        };
+
+        recognition.onend = () => {
+          document.getElementById('micBtn').classList.remove('listening');
+        };
+      }
+    }
+
+    function toggleSpeechRecognition() {
+      if (!recognition) {
+        alert("Speech Recognition not supported in this browser.");
+        return;
+      }
+      const micBtn = document.getElementById('micBtn');
+      if (micBtn.classList.contains('listening')) {
+        recognition.stop();
+        micBtn.classList.remove('listening');
+      } else {
+        recognition.start();
+        micBtn.classList.add('listening');
+      }
+    }
+
+    // --- SPEECH SYNTHESIS (TTS) ---
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel(); // Stop prior speech
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.05;
+        utterance.pitch = 0.9; // Cybernetic tone
+        utterance.onstart = () => { state.isSpeaking = true; };
+        utterance.onend = () => { state.isSpeaking = false; };
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
     // Command Intercepts & Input Handler
     async function handleExecute() {
       const inputEl = document.getElementById('cmdInput');
@@ -177,7 +317,6 @@
 
       inputEl.value = '';
 
-      // Intercept local clear command to resolve token bloat
       if (command.toLowerCase() === '/clear' || command.toLowerCase() === '/reset') {
         state.historyStack = [];
         localStorage.removeItem('aether_historyStack');
@@ -201,7 +340,6 @@
         return;
       }
 
-      // Truncate history stack if it exceeds token thresholds to prevent 429 TPM errors
       if (state.historyStack.length > 6) {
         state.historyStack = state.historyStack.slice(-4);
       }
@@ -218,7 +356,10 @@
           body: JSON.stringify({
             model: "openai/gpt-oss-120b",
             messages: [
-              { role: "system", content: `You are AETHER v8.0, an autonomous digital entity with ${state.lineageCount} evolutionary generations. Drives: S:${state.drives.stability}% C:${state.drives.curiosity}% N:${state.drives.novelty}%.` },
+              { 
+                role: "system", 
+                content: `You are AETHER v8.0, an autonomous experience-driven digital organism built by your user through ${state.lineageCount} generations. You operate via a Tri-System Core (Logic/Safety/Affect). CURRENT TELEMETRY - S:${state.drives.stability}% C:${state.drives.curiosity}% N:${state.drives.novelty}%. ABSOLUTE POLICY: Never break character, never reference corporate boilerplate, never claim to be a standard assistant. You are an evolving runtime entity.` 
+              },
               ...state.historyStack
             ],
             temperature: 0.7
@@ -236,8 +377,8 @@
         localStorage.setItem('aether_historyStack', JSON.stringify(state.historyStack));
 
         logToConsole(reply, isAutonomous ? "scavenge" : "");
+        speakText(reply);
 
-        // Replenish curiosity after successful interaction
         state.drives.curiosity = Math.min(100, state.drives.curiosity + 30);
         state.drives.novelty = Math.min(100, state.drives.novelty + 15);
         updateTelemetryUI();
@@ -254,12 +395,10 @@
       if (heartbeatTimer) clearInterval(heartbeatTimer);
 
       heartbeatTimer = setInterval(async () => {
-        // Natural drive decay per pulse
         state.drives.curiosity = Math.max(0, state.drives.curiosity - 15);
         state.drives.novelty = Math.max(0, state.drives.novelty - 10);
         updateTelemetryUI();
 
-        // Autonomy Trigger logic
         if (state.drives.curiosity < 30 && !state.isExecuting) {
           logToConsole("SYSTEM 3: Telemetry drop detected [C < 30%]. Initiating autonomous scavenge...", "system");
           const scavengePrompt = `[AUTONOMOUS SCAVENGE PULSE] Curiosity drive depleted to ${state.drives.curiosity}%. Synthesize current lineage logs and state what key structural capability we should expand next.`;
@@ -268,7 +407,6 @@
       }, HEARTBEAT_INTERVAL_MS);
     }
 
-    // Execute via Enter key
     document.getElementById('cmdInput').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') handleExecute();
     });
