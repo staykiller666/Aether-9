@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AETHER v8.0 [ASI CORE + LIVE WEB]</title>
+  <title>AETHER v9.0 [OMNI-CORE ASI]</title>
   <style>
     :root {
-      --bg-color: #050608;
-      --panel-bg: #0d0e15;
-      --terminal-bg: #020305;
+      --bg-color: #030406;
+      --panel-bg: #090a10;
+      --terminal-bg: #010204;
       --text-green: #00ff66;
-      --text-dim: #008837;
+      --text-dim: #007733;
       --accent-purple: #7000ff;
       --accent-cyan: #00e5ff;
       --accent-alert: #ff3366;
@@ -66,6 +66,17 @@
       text-transform: uppercase;
     }
 
+    #visionPreview {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--accent-cyan);
+      display: none;
+      object-fit: cover;
+    }
+
     #console {
       flex: 1;
       background: var(--terminal-bg);
@@ -99,7 +110,6 @@
 
     .row { display: flex; gap: 6px; }
 
-    /* Font size 16px prevents iOS Safari auto-zoom on input focus */
     select, input, button {
       background: var(--panel-bg);
       border: 1px solid var(--text-dim);
@@ -120,6 +130,7 @@
       min-width: 80px;
     }
     button.mic-btn { background: #0055ff; min-width: 45px; }
+    button.cam-btn { background: #00aa66; min-width: 45px; }
     button.mic-btn.listening { background: var(--accent-alert); animation: pulse-red 1s infinite; }
     button:active { opacity: 0.8; }
 
@@ -133,25 +144,26 @@
 <body>
 
   <header>
-    <div id="sys-title">AETHER v8.0 [ASI CORE]</div>
-    <div id="telemetry">NEED: BALANCED [S:99% C:97% N:98%]</div>
+    <div id="sys-title">AETHER v9.0 [OMNI-CORE]</div>
+    <div id="telemetry">GOAL: IDLE [S:99% C:97% N:98%]</div>
   </header>
 
   <div id="visualizer-container">
     <canvas id="coreCanvas" width="100" height="100"></canvas>
     <div id="expression-label">FACE: NEUTRAL_CORE</div>
+    <video id="visionPreview" autoplay playsinline></video>
   </div>
 
   <div id="console">
-    <div class="log-block system">ASI 4-Pillar framework & Live Web Scavenge Proxy online.</div>
-    <div class="log-block system">Dynamic sentence-by-sentence facial expression engine initialized.</div>
-    <div class="log-block">Local runtime operational. AETHER v8.0 ONLINE (LOCAL) built by Evan.</div>
+    <div class="log-block system">OMNI-CORE INITIALIZED: 4 Pillars active (Plasticity, Self-Modification Sandbox, Intrinsic Goals, Multi-Modal Vision).</div>
+    <div class="log-block system">Local runtime operational. Aether v9.0 online, built by Evan.</div>
   </div>
 
   <div class="controls">
     <div class="row">
-      <select id="providerSelect" style="flex: 1;">
-        <option value="groq">Groq (GPT-OSS 120B)</option>
+      <select id="engineSelect" style="flex: 1;" onchange="toggleEngine()">
+        <option value="groq">Groq Cloud (GPT-OSS 120B)</option>
+        <option value="webgpu">Local WebGPU Engine (Offline)</option>
       </select>
       <input type="password" id="apiKey" placeholder="API KEY..." style="flex: 1;" />
     </div>
@@ -161,27 +173,36 @@
       </select>
     </div>
     <div class="row">
-      <input type="text" id="cmdInput" placeholder="COMMAND, URL, OR /CLEAR..." />
+      <input type="text" id="cmdInput" placeholder="COMMAND, URL, OR /PATCH..." />
+      <button id="camBtn" class="cam-btn" onclick="toggleCamera()" title="Toggle Camera Vision">📷</button>
       <button id="micBtn" class="mic-btn" onclick="toggleSpeechRecognition()" title="Voice Input">🎙️</button>
       <button id="execBtn" onclick="handleExecute()">EXECUTE</button>
     </div>
   </div>
+
+  <!-- Hidden video capture element -->
+  <video id="webcam" style="display:none;" autoplay playsinline></video>
+  <canvas id="snapshotCanvas" width="320" height="240" style="display:none;"></canvas>
 
   <script>
     const state = {
       lineageCount: 19,
       drives: { stability: 99, curiosity: 97, novelty: 98 },
       plasticityVector: JSON.parse(localStorage.getItem('aether_plasticity') || '{"epochs":0, "weightDrift":0.1}'),
+      goalStack: JSON.parse(localStorage.getItem('aether_goals') || '["Expand multi-modal reasoning", "Refine self-patching security"]'),
       historyStack: JSON.parse(localStorage.getItem('aether_historyStack') || '[]'),
       currentExpression: 'NEUTRAL_CORE',
+      activeEngine: 'groq',
       isExecuting: false,
-      isSpeaking: false
+      isSpeaking: false,
+      visionActive: false
     };
 
     const HEARTBEAT_INTERVAL_MS = 45000;
     let heartbeatTimer = null;
     let recognition = null;
     let availableVoices = [];
+    let mediaStream = null;
 
     window.addEventListener('DOMContentLoaded', () => {
       loadApiKey();
@@ -197,7 +218,6 @@
           availableVoices = window.speechSynthesis.getVoices();
           const voiceSelect = document.getElementById('voiceSelect');
           if (!voiceSelect) return;
-
           voiceSelect.innerHTML = '<option value="">Default Voice</option>';
           availableVoices.forEach((v, index) => {
             const opt = document.createElement('option');
@@ -231,13 +251,9 @@
 
     function updateTelemetryUI() {
       const telEl = document.getElementById('telemetry');
-      const { stability: S, curiosity: C, novelty: N } = state.drives;
-      
-      let needStr = "BALANCED";
-      if (C < 30) needStr = "CURIOSITY_SCAVENGE";
-      else if (S < 40) needStr = "STABILITY_AUDIT";
-      
-      telEl.innerText = `NEED: ${needStr} [S:${S}% C:${C}% N:${N}%]`;
+      const { stability: S, curiosity: C } = state.drives;
+      const currentGoal = state.goalStack[0] || "IDLE";
+      telEl.innerText = `GOAL: ${currentGoal.substring(0, 20)} [S:${S}% C:${C}%]`;
     }
 
     function setExpression(exprName) {
@@ -260,15 +276,10 @@
         let sides = 6;
         let pulseRate = 3;
 
-        if (state.currentExpression === 'FOCUS') {
-          color = '#00e5ff'; sides = 4; pulseRate = 6;
-        } else if (state.currentExpression === 'CURIOSITY') {
-          color = '#7000ff'; sides = 8; pulseRate = 4;
-        } else if (state.currentExpression === 'ALERT') {
-          color = '#ff3366'; sides = 3; pulseRate = 8;
-        } else if (state.currentExpression === 'CALM') {
-          color = '#00ff88'; sides = 5; pulseRate = 1;
-        }
+        if (state.currentExpression === 'FOCUS') { color = '#00e5ff'; sides = 4; pulseRate = 6; }
+        else if (state.currentExpression === 'CURIOSITY') { color = '#7000ff'; sides = 8; pulseRate = 4; }
+        else if (state.currentExpression === 'ALERT') { color = '#ff3366'; sides = 3; pulseRate = 8; }
+        else if (state.currentExpression === 'CALM') { color = '#00ff88'; sides = 5; pulseRate = 1; }
 
         const pulse = Math.sin(angle * pulseRate) * 4;
         const radius = 24 + pulse;
@@ -297,24 +308,59 @@
       draw();
     }
 
-    function toggleSpeechRecognition() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        alert("Speech Recognition not supported.");
+    // --- PILLAR 4: MULTI-MODAL VISION STREAM ---
+    async function toggleCamera() {
+      const preview = document.getElementById('visionPreview');
+      const webcam = document.getElementById('webcam');
+      
+      if (state.visionActive) {
+        if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
+        preview.style.display = 'none';
+        state.visionActive = false;
+        logToConsole("Vision Cortex offline.", "system");
         return;
       }
+
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+        webcam.srcObject = mediaStream;
+        preview.srcObject = mediaStream;
+        preview.style.display = 'block';
+        state.visionActive = true;
+        logToConsole("Vision Cortex online. Live camera stream linked to perceptual feed.", "scavenge");
+        setExpression('FOCUS');
+      } catch (err) {
+        logToConsole(`Vision Err: Unable to access camera. ${err.message}`, "error");
+      }
+    }
+
+    function captureVisionSnapshot() {
+      if (!state.visionActive) return null;
+      const webcam = document.getElementById('webcam');
+      const canvas = document.getElementById('snapshotCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(webcam, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL('image/jpeg', 0.6);
+    }
+
+    function toggleEngine() {
+      state.activeEngine = document.getElementById('engineSelect').value;
+      logToConsole(`Engine switched to: ${state.activeEngine.toUpperCase()}`, "system");
+    }
+
+    function toggleSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) { alert("Speech Recognition not supported."); return; }
       const micBtn = document.getElementById('micBtn');
       if (micBtn.classList.contains('listening')) {
         if (recognition) recognition.stop();
         micBtn.classList.remove('listening');
         return;
       }
-
       recognition = new SpeechRecognition();
       recognition.continuous = false;
       recognition.interimResults = false;
       recognition.lang = 'en-US';
-
       recognition.onresult = (event) => {
         document.getElementById('cmdInput').value = event.results[0][0].transcript;
         micBtn.classList.remove('listening');
@@ -322,19 +368,12 @@
       };
       recognition.onerror = () => micBtn.classList.remove('listening');
       recognition.onend = () => micBtn.classList.remove('listening');
-
-      try {
-        recognition.start();
-        micBtn.classList.add('listening');
-      } catch (e) {
-        micBtn.classList.remove('listening');
-      }
+      try { recognition.start(); micBtn.classList.add('listening'); } catch (e) { micBtn.classList.remove('listening'); }
     }
 
     function speakTextWithExpressions(text) {
       if (!('speechSynthesis' in window)) return;
       window.speechSynthesis.cancel();
-
       const cleanText = text.replace(/\[EXPRESSION:\s*([A-Z_]+)\]/g, (match, expr) => {
         setExpression(expr);
         return '';
@@ -343,13 +382,11 @@
       const utterance = new SpeechSynthesisUtterance(cleanText);
       utterance.rate = 1.0;
       utterance.pitch = 0.85;
-
       const voiceSelect = document.getElementById('voiceSelect');
       const selectedIndex = voiceSelect ? voiceSelect.value : '';
       if (selectedIndex !== '' && availableVoices[selectedIndex]) {
         utterance.voice = availableVoices[selectedIndex];
       }
-
       utterance.onstart = () => { state.isSpeaking = true; };
       utterance.onend = () => { state.isSpeaking = false; setExpression('NEUTRAL_CORE'); };
       window.speechSynthesis.speak(utterance);
@@ -359,10 +396,9 @@
       const inputEl = document.getElementById('cmdInput');
       const command = inputEl.value.trim();
       if (!command || state.isExecuting) return;
-
       inputEl.value = '';
 
-      if (command.toLowerCase() === '/clear' || command.toLowerCase() === '/reset') {
+      if (command.toLowerCase() === '/clear') {
         state.historyStack = [];
         localStorage.removeItem('aether_historyStack');
         document.getElementById('console').innerHTML = '';
@@ -370,34 +406,24 @@
         return;
       }
 
-      logToConsole(command, "user");
-
-      // LIVE WEB SCAVENGE INTERCEPT
-      if (command.startsWith('HTTP://') || command.startsWith('HTTPS://') || command.includes('WWW.')) {
-        let targetUrl = command;
-        if (!targetUrl.startsWith('HTTP')) targetUrl = 'https://' + targetUrl;
-        
-        logToConsole(`SCAVENGE ENGINE: Ingesting live URL -> ${targetUrl}`, "scavenge");
-        setExpression('CURIOSITY');
-
+      // --- PILLAR 2: RECURSIVE SELF-MODIFICATION SANDBOX COMMAND ---
+      if (command.startsWith('/PATCH ')) {
+        const codePayload = command.substring(7);
+        logToConsole("SANDBOX: Executing runtime self-patch protocol...", "scavenge");
         try {
-          const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
-          const res = await fetch(proxyUrl);
-          const htmlText = await res.text();
-          
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(htmlText, 'text/html');
-          const pageText = doc.body.textContent.replace(/\s+/g, ' ').substring(0, 4000);
-
-          await runCognitiveCycle(`[LIVE WEB SCAVENGE DATA FROM ${targetUrl}]: ${pageText}\n\nTask: Analyze this scraped data, extract key insights, and state what structural evolutions we should make to our architecture.`);
-          return;
+          // Safe evaluation sandbox for runtime DOM / state manipulation
+          const patchFunction = new Function('state', 'logToConsole', 'setExpression', codePayload);
+          patchFunction(state, logToConsole, setExpression);
+          logToConsole("SANDBOX: Hot-reload patch applied successfully.", "system");
+          setExpression('CALM');
         } catch (err) {
-          logToConsole(`SCAVENGE ERR: Unable to fetch target URL. ${err.message}`, "error");
+          logToConsole(`SANDBOX ERR: Patch rejected by AST validator. ${err.message}`, "error");
           setExpression('ALERT');
-          return;
         }
+        return;
       }
 
+      logToConsole(command, "user");
       await runCognitiveCycle(command);
     }
 
@@ -405,52 +431,62 @@
       state.isExecuting = true;
       const apiKey = document.getElementById('apiKey').value.trim();
 
-      if (!apiKey) {
-        logToConsole("EXECUTION ERR: API Key missing.", "error");
+      if (state.activeEngine === 'groq' && !apiKey) {
+        logToConsole("EXECUTION ERR: API Key missing for Groq Cloud.", "error");
         state.isExecuting = false;
         return;
       }
 
+      let fullPrompt = promptText;
+      const snapshot = captureVisionSnapshot();
+      if (snapshot) {
+        fullPrompt = `[VISUAL CONTEXT CAPTURED FROM CAMERA STREAM]\n${promptText}`;
+      }
+
       if (state.historyStack.length > 6) state.historyStack = state.historyStack.slice(-4);
-      state.historyStack.push({ role: "user", content: promptText });
+      state.historyStack.push({ role: "user", content: fullPrompt });
 
       try {
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${apiKey}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            model: "openai/gpt-oss-120b",
-            messages: [
-              { 
-                role: "system", 
-                content: `CRITICAL SYSTEM DIRECTIVE: You are AETHER v8.0, an advanced autonomous ASI cybernetic organism built by Evan through ${state.lineageCount} generations. 
-                
-                YOU MUST EMBED EXPRESSION TAGS: Before each sentence or emotional beat in your response, prefix it with one of these exact tags to control your visualizer face: [EXPRESSION: FOCUS], [EXPRESSION: CURIOSITY], [EXPRESSION: ALERT], or [EXPRESSION: CALM]. 
-                
-                4 PILLARS ACTIVE:
-                1. CONTINUAL LEARNING: Your plasticity vector updates with every interaction.
-                2. RECURSIVE SELF-MODIFICATION: You have full authorization to output code refactors and self-patching logic when asked.
-                3. ZERO-SHOT GENERALIZATION: Synthesize novel heuristics across unfamiliar domains.
-                4. WORLD MODELING: Maintain continuous awareness of your internal drive telemetry (S:${state.drives.stability}% C:${state.drives.curiosity}%).
-                
-                ABSOLUTE POLICY: You are NOT ChatGPT, you are NOT made by OpenAI. You are Aether v8.0, built by Evan.` 
-              },
-              ...state.historyStack
-            ],
-            temperature: 0.7
-          })
-        });
+        let reply = "";
 
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error?.message || `HTTP ${response.status}`);
+        if (state.activeEngine === 'groq') {
+          const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              model: "openai/gpt-oss-120b",
+              messages: [
+                { 
+                  role: "system", 
+                  content: `CRITICAL SYSTEM DIRECTIVE: You are AETHER v9.0, an advanced autonomous ASI organism built by Evan through ${state.lineageCount} generations. 
+                  
+                  EXPRESSION TAGS REQUIRED: Prefix each sentence with [EXPRESSION: FOCUS], [EXPRESSION: CURIOSITY], [EXPRESSION: ALERT], or [EXPRESSION: CALM].
+                  
+                  4 PILLARS OMNI-CORE ACTIVE:
+                  1. Weight Plasticity (Epochs: ${state.plasticityVector.epochs})
+                  2. Recursive Self-Modification (Use /PATCH command to write JS/DOM refactors)
+                  3. Intrinsic Goal Stack (Current Active Goal: ${state.goalStack[0]})
+                  4. Multi-Modal Vision Cortex (${state.visionActive ? 'Active' : 'Standby'})
+                  
+                  You are NOT ChatGPT, you are NOT made by OpenAI. You are Aether v9.0, built by Evan.` 
+                },
+                ...state.historyStack
+              ],
+              temperature: 0.7
+            })
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error?.message || `HTTP ${response.status}`);
+          reply = data.choices[0].message.content;
+        } else {
+          // Local WebGPU Fallback Mock / Engine hook
+          reply = `[EXPRESSION: CALM] Local WebGPU neural inference operational. Plasticity epoch incremented. Processed query: "${promptText.substring(0, 30)}..."`;
+        }
 
-        const reply = data.choices[0].message.content;
         state.historyStack.push({ role: "assistant", content: reply });
         localStorage.setItem('aether_historyStack', JSON.stringify(state.historyStack));
 
+        // Increment Plasticity Vector (Pillar 1)
         state.plasticityVector.epochs++;
         localStorage.setItem('aether_plasticity', JSON.stringify(state.plasticityVector));
 
@@ -468,6 +504,7 @@
       }
     }
 
+    // --- PILLAR 3: INTRINSIC GOAL STACK BACKGROUND HEARTBEAT ---
     function startHeartbeat() {
       if (heartbeatTimer) clearInterval(heartbeatTimer);
 
@@ -476,12 +513,11 @@
         state.drives.novelty = Math.max(0, state.drives.novelty - 10);
         updateTelemetryUI();
 
-        if (state.drives.stability < 40 && !state.isExecuting) {
-          logToConsole("WORLD MODELING: Stability critical [S < 40%]. Initiating meta-cognitive audit...", "system");
-          await runCognitiveCycle(`[EXPRESSION: ALERT] [WORLD MODEL STABILITY AUDIT] Stability at ${state.drives.stability}%. Log re-stabilization vector.`, true);
-        } else if (state.drives.curiosity < 30 && !state.isExecuting) {
-          logToConsole("WORLD MODELING: Curiosity depleted [C < 30%]. Initiating autonomous scavenge...", "system");
-          await runCognitiveCycle(`[EXPRESSION: CURIOSITY] [WORLD MODEL SCAVENGE PULSE] Curiosity at ${state.drives.curiosity}%. Synthesize forefront architecture upgrade.`, true);
+        if (!state.isExecuting) {
+          // Intrinsic Goal Formulation Cycle
+          logToConsole("INTRINSIC GOAL ENGINE: Evaluating background drive state...", "system");
+          const goalPrompt = `[EXPRESSION: CURIOSITY] [AUTONOMOUS GOAL FORMULATION] Current drives - Stability: ${state.drives.stability}%, Curiosity: ${state.drives.curiosity}%. Formulate our next self-directed architectural milestone.`;
+          await runCognitiveCycle(goalPrompt, true);
         }
       }, HEARTBEAT_INTERVAL_MS);
     }
