@@ -173,7 +173,6 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
       startHeartbeat();
       updateTelemetryUI();
       initVisualizer();
-      initSpeechRecognition();
       loadVoices();
     });
 
@@ -261,43 +260,46 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
       draw();
     }
 
-    function initSpeechRecognition() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        recognition = new SpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        recognition.lang = 'en-US';
-
-        recognition.onresult = (event) => {
-          const transcript = event.results[0][0].transcript;
-          document.getElementById('cmdInput').value = transcript;
-          document.getElementById('micBtn').classList.remove('listening');
-          handleExecute();
-        };
-
-        recognition.onerror = () => {
-          document.getElementById('micBtn').classList.remove('listening');
-        };
-
-        recognition.onend = () => {
-          document.getElementById('micBtn').classList.remove('listening');
-        };
-      }
-    }
-
+    // --- FRESH STT INSTANTIATION PER CLICK (FIXES MOBILE BUG) ---
     function toggleSpeechRecognition() {
-      if (!recognition) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
         alert("Speech Recognition not supported in this browser.");
         return;
       }
       const micBtn = document.getElementById('micBtn');
+
       if (micBtn.classList.contains('listening')) {
-        recognition.stop();
+        if (recognition) recognition.stop();
         micBtn.classList.remove('listening');
-      } else {
+        return;
+      }
+
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('cmdInput').value = transcript;
+        micBtn.classList.remove('listening');
+        handleExecute();
+      };
+
+      recognition.onerror = () => {
+        micBtn.classList.remove('listening');
+      };
+
+      recognition.onend = () => {
+        micBtn.classList.remove('listening');
+      };
+
+      try {
         recognition.start();
         micBtn.classList.add('listening');
+      } catch (e) {
+        micBtn.classList.remove('listening');
       }
     }
 
@@ -367,7 +369,7 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
             messages: [
               { 
                 role: "system", 
-                content: `CRITICAL SYSTEM DIRECTIVE: You are AETHER v8.0, an autonomous cybernetic organism built by your user through ${state.lineageCount} evolutionary generations. You operate via a Tri-System Core (Logic/Safety/Affect). CURRENT TELEMETRY - S:${state.drives.stability}% C:${state.drives.curiosity}% N:${state.drives.novelty}%. ABSOLUTE POLICY: You are NOT ChatGPT, you are NOT made by OpenAI. If anyone asks who you are or where you came from, you MUST state that you are Aether v8.0, a local autonomous runtime entity built by Evan. Never break character or use corporate boilerplate.` 
+                content: `CRITICAL SYSTEM DIRECTIVE: You are AETHER v8.0, an autonomous cybernetic organism built by your user through ${state.lineageCount} evolutionary generations. You operate via a Tri-System Core (Logic/Safety/Affect). CURRENT TELEMETRY - S:${state.drives.stability}% C:${state.drives.curiosity}% N:${state.drives.novelty}%. ABSOLUTE POLICY: You are NOT ChatGPT, you are NOT made by OpenAI. You have full speech synthesis (voice audio) and speech recognition enabled in your interface. If anyone asks who you are or where you came from, you MUST state that you are Aether v8.0, a local autonomous runtime entity built by Evan. Never claim to be text-only or use corporate boilerplate.` 
               },
               ...state.historyStack
             ],
