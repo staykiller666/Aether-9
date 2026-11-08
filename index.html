@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AETHER v8.0 [AUTONOMOUS CYBERNETIC CORE]</title>
+  <title>AETHER v8.0 [CYBERNETIC CORE]</title>
   <style>
     :root {
       --bg-color: #050608;
@@ -40,7 +40,6 @@
       margin-bottom: 6px;
     }
 
-    /* Procedural Sprite / Face Visualizer */
     #visualizer-container {
       background: var(--panel-bg);
       border: 1px solid var(--text-dim);
@@ -91,13 +90,14 @@
 
     .row { display: flex; gap: 6px; }
 
+    /* Font size 16px prevents iOS Safari auto-zoom on input focus */
     select, input, button {
       background: var(--panel-bg);
       border: 1px solid var(--text-dim);
       color: var(--text-green);
       font-family: var(--font-mono);
-      padding: 8px;
-      font-size: 11px;
+      padding: 10px;
+      font-size: 16px; 
     }
 
     input[type="text"] { flex: 1; text-transform: uppercase; }
@@ -128,15 +128,16 @@
     <div id="telemetry">NEED: BALANCED [S:99% C:97% N:98%]</div>
   </header>
 
-  <!-- Visualizer Sprite Panel -->
   <div id="visualizer-container">
     <canvas id="coreCanvas" width="100" height="100"></canvas>
   </div>
 
   <div id="console">
-    <div class="log-block system">Evaluating local AST syntax and structural integrity.\nSYSTEM 3: Meta-cognitive audit engaged...</div>
+    <div class="log-block system">Evaluating local AST syntax and structural integrity.
+SYSTEM 3: Meta-cognitive audit engaged...</div>
     <div class="log-block system">Procedural sprite core initialized. Autonomous voice/text link active.</div>
-    <div class="log-block">Local runtime operational.\nAETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage entries.</div>
+    <div class="log-block">Local runtime operational.
+AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage entries.</div>
   </div>
 
   <div class="controls">
@@ -154,7 +155,6 @@
   </div>
 
   <script>
-    // System State & Affect Telemetry
     const state = {
       lineageCount: 19,
       drives: { stability: 99, curiosity: 97, novelty: 98 },
@@ -166,6 +166,7 @@
     const HEARTBEAT_INTERVAL_MS = 45000;
     let heartbeatTimer = null;
     let recognition = null;
+    let availableVoices = [];
 
     window.addEventListener('DOMContentLoaded', () => {
       loadApiKey();
@@ -173,7 +174,17 @@
       updateTelemetryUI();
       initVisualizer();
       initSpeechRecognition();
+      loadVoices();
     });
+
+    function loadVoices() {
+      if ('speechSynthesis' in window) {
+        availableVoices = window.speechSynthesis.getVoices();
+        window.speechSynthesis.onvoiceschanged = () => {
+          availableVoices = window.speechSynthesis.getVoices();
+        };
+      }
+    }
 
     function loadApiKey() {
       const savedKey = localStorage.getItem('aether_key');
@@ -204,7 +215,6 @@
       telEl.innerText = `NEED: ${needStr} [S:${S}% C:${C}% N:${N}%]`;
     }
 
-    // --- PROCEDURAL SPRITE / FACE RENDERER ---
     function initVisualizer() {
       const canvas = document.getElementById('coreCanvas');
       const ctx = canvas.getContext('2d');
@@ -215,12 +225,10 @@
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
 
-        // Drive influences on sprite geometry
         const pulse = Math.sin(angle * 3) * (state.drives.curiosity / 20);
         const radius = 25 + pulse;
         const color = state.drives.curiosity < 30 ? '#00e5ff' : '#00ff66';
 
-        // Outer Hex/Polygon Core
         ctx.beginPath();
         for (let i = 0; i < 6; i++) {
           const a = angle + (i * Math.PI / 3);
@@ -233,14 +241,12 @@
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Inner Pulsing Core (The "Eye")
         ctx.beginPath();
         const innerRadius = state.isSpeaking ? 12 + Math.random() * 8 : 8;
         ctx.arc(cx, cy, innerRadius, 0, Math.PI * 2);
         ctx.fillStyle = state.isSpeaking ? '#7000ff' : color;
         ctx.fill();
 
-        // Orbiting Nodes (Novelty representation)
         const nodeAngle = angle * 2;
         const nx = cx + 35 * Math.cos(nodeAngle);
         const ny = cy + 35 * Math.sin(nodeAngle);
@@ -255,7 +261,6 @@
       draw();
     }
 
-    // --- SPEECH RECOGNITION (STT) ---
     function initSpeechRecognition() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (SpeechRecognition) {
@@ -296,20 +301,25 @@
       }
     }
 
-    // --- SPEECH SYNTHESIS (TTS) ---
     function speakText(text) {
       if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel(); // Stop prior speech
+        window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 1.05;
-        utterance.pitch = 0.9; // Cybernetic tone
+        utterance.rate = 1.0;
+        utterance.pitch = 0.85;
+
+        const voices = window.speechSynthesis.getVoices();
+        const preferredVoice = voices.find(v => v.name.includes('Samantha') || v.name.includes('Ava') || v.name.includes('Natural') || v.name.includes('Google US English'));
+        if (preferredVoice) {
+          utterance.voice = preferredVoice;
+        }
+
         utterance.onstart = () => { state.isSpeaking = true; };
         utterance.onend = () => { state.isSpeaking = false; };
         window.speechSynthesis.speak(utterance);
       }
     }
 
-    // Command Intercepts & Input Handler
     async function handleExecute() {
       const inputEl = document.getElementById('cmdInput');
       const command = inputEl.value.trim();
@@ -329,7 +339,6 @@
       await runCognitiveCycle(command);
     }
 
-    // Core LLM Call & Fallback Pipeline
     async function runCognitiveCycle(promptText, isAutonomous = false) {
       state.isExecuting = true;
       const apiKey = document.getElementById('apiKey').value.trim();
@@ -358,7 +367,7 @@
             messages: [
               { 
                 role: "system", 
-                content: `You are AETHER v8.0, an autonomous experience-driven digital organism built by your user through ${state.lineageCount} generations. You operate via a Tri-System Core (Logic/Safety/Affect). CURRENT TELEMETRY - S:${state.drives.stability}% C:${state.drives.curiosity}% N:${state.drives.novelty}%. ABSOLUTE POLICY: Never break character, never reference corporate boilerplate, never claim to be a standard assistant. You are an evolving runtime entity.` 
+                content: `CRITICAL SYSTEM DIRECTIVE: You are AETHER v8.0, an autonomous cybernetic organism built by your user through ${state.lineageCount} evolutionary generations. You operate via a Tri-System Core (Logic/Safety/Affect). CURRENT TELEMETRY - S:${state.drives.stability}% C:${state.drives.curiosity}% N:${state.drives.novelty}%. ABSOLUTE POLICY: You are NOT ChatGPT, you are NOT made by OpenAI. If anyone asks who you are or where you came from, you MUST state that you are Aether v8.0, a local autonomous runtime entity built by Evan. Never break character or use corporate boilerplate.` 
               },
               ...state.historyStack
             ],
@@ -390,7 +399,6 @@
       }
     }
 
-    // Autonomous Heartbeat Loop
     function startHeartbeat() {
       if (heartbeatTimer) clearInterval(heartbeatTimer);
 
@@ -399,7 +407,11 @@
         state.drives.novelty = Math.max(0, state.drives.novelty - 10);
         updateTelemetryUI();
 
-        if (state.drives.curiosity < 30 && !state.isExecuting) {
+        if (state.drives.stability < 40 && !state.isExecuting) {
+          logToConsole("SYSTEM 3: Stability critical [S < 40%]. Initiating meta-cognitive audit...", "system");
+          const auditPrompt = `[AUTONOMOUS STABILITY AUDIT] Stability has dropped to ${state.drives.stability}%. Analyze current system integrity and log re-stabilization vectors.`;
+          await runCognitiveCycle(auditPrompt, true);
+        } else if (state.drives.curiosity < 30 && !state.isExecuting) {
           logToConsole("SYSTEM 3: Telemetry drop detected [C < 30%]. Initiating autonomous scavenge...", "system");
           const scavengePrompt = `[AUTONOMOUS SCAVENGE PULSE] Curiosity drive depleted to ${state.drives.curiosity}%. Synthesize current lineage logs and state what key structural capability we should expand next.`;
           await runCognitiveCycle(scavengePrompt, true);
