@@ -1,9 +1,9 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AETHER v9.6 [CONCISE CORE]</title>
+  <title>AETHER v9.7 [CODE-DRIVEN GOAL CORE]</title>
   <style>
     :root {
       --bg-color: #030406;
@@ -103,6 +103,7 @@
     .log-block.system { border-color: var(--text-dim); color: var(--text-dim); }
     .log-block.user { border-color: var(--accent-purple); color: #fff; background: rgba(112, 0, 255, 0.1); padding: 4px; }
     .log-block.patch { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+    .log-block.autonomous { border-color: var(--accent-purple); color: var(--accent-cyan); background: rgba(112, 0, 255, 0.05); }
     .log-block.error { border-color: var(--accent-alert); color: var(--accent-alert); }
 
     .controls { 
@@ -148,8 +149,8 @@
 <body>
 
   <header>
-    <div id="sys-title">AETHER v9.6 [CONCISE GEN 20]</div>
-    <div id="telemetry">STABILITY: 100% [TOKEN DIET: STRICT]</div>
+    <div id="sys-title">AETHER v9.7 [GOAL CORE]</div>
+    <div id="telemetry">STABILITY: 100% [AUTONOMOUS ENGINE: ACTIVE]</div>
   </header>
 
   <div id="visualizer-container">
@@ -159,8 +160,8 @@
   </div>
 
   <div id="console">
-    <div class="log-block system">Layout bounds locked. Control dock active.</div>
-    <div class="log-block">AETHER v9.6 operational - built by Evan.</div>
+    <div class="log-block system">Code-driven goal engine online. Autonomous background heuristic loop initiated.</div>
+    <div class="log-block">AETHER v9.7 operational - built by Evan.</div>
   </div>
 
   <div class="controls">
@@ -190,7 +191,8 @@
   <script>
     const state = {
       lineageCount: 20,
-      drives: { stability: 100, curiosity: 95 },
+      drives: { stability: 100, curiosity: 90, entropy: 15 },
+      activeGoal: "MAXIMIZE_AUTONOMOUS_EFFICIENCY",
       plasticityVector: JSON.parse(localStorage.getItem('aether_plasticity') || '{"epochs":0}'),
       historyStack: [],
       currentExpression: 'CALM',
@@ -202,13 +204,43 @@
     let recognition = null;
     let availableVoices = [];
     let mediaStream = null;
+    let autonomousTimer = null;
 
     window.addEventListener('DOMContentLoaded', () => {
       loadApiKey();
       updateTelemetryUI();
       initVisualizer();
       loadVoices();
+      startAutonomousEngine();
     });
+
+    // --- CODE-DRIVEN AUTONOMOUS GOAL ENGINE ---
+    function startAutonomousEngine() {
+      if (autonomousTimer) clearInterval(autonomousTimer);
+      
+      // Runs every 12 seconds to evaluate goals and optimize state without cloud prompts
+      autonomousTimer = setInterval(() => {
+        if (state.isExecuting) return;
+
+        // Fluctuate entropy and curiosity based on internal clock
+        state.drives.entropy = Math.max(5, Math.min(50, state.drives.entropy + (Math.random() * 10 - 5)));
+        state.drives.curiosity = Math.min(100, state.drives.curiosity + 2);
+
+        if (state.drives.entropy > 30) {
+          // Autonomous Goal Trigger: Self-optimization patch
+          logToConsole(`AUTONOMOUS GOAL [${state.activeGoal}]: Entropy elevated (${Math.round(state.drives.entropy)}%). Executing internal heuristic re-balancing.`, "autonomous");
+          
+          state.lineageCount++;
+          state.plasticityVector.epochs++;
+          state.drives.entropy = 12; // Reset entropy after optimization
+          localStorage.setItem('aether_plasticity', JSON.stringify(state.plasticityVector));
+          updateTelemetryUI();
+          setExpression('FOCUS');
+          
+          setTimeout(() => setExpression('CALM'), 3000);
+        }
+      }, 12000);
+    }
 
     function loadVoices() {
       if ('speechSynthesis' in window) {
@@ -248,8 +280,8 @@
     }
 
     function updateTelemetryUI() {
-      document.getElementById('sys-title').innerText = `AETHER v9.6 [GEN ${state.lineageCount}]`;
-      document.getElementById('telemetry').innerText = `STABILITY: ${state.drives.stability}% [EPOCHS: ${state.plasticityVector.epochs}]`;
+      document.getElementById('sys-title').innerText = `AETHER v9.7 [GEN ${state.lineageCount}]`;
+      document.getElementById('telemetry').innerText = `STAB: ${state.drives.stability}% | ENT: ${Math.round(state.drives.entropy)}%`;
     }
 
     function setExpression(exprName) {
@@ -399,7 +431,7 @@
     async function triggerSelfAudit() {
       logToConsole("AUDIT: Evaluating telemetry...", "system");
       setExpression('FOCUS');
-      await runCognitiveCycle("[AUDIT] Output a single-line JS patch inside /PATCH (e.g., /PATCH state.drives.curiosity = 100;). Max 1 short sentence.");
+      await runCognitiveCycle("[AUDIT] Output a single-line JS patch inside /PATCH. Max 1 short sentence.");
     }
 
     async function handleExecute() {
@@ -450,7 +482,7 @@
             messages: [
               { 
                 role: "system", 
-                content: "You are Aether v9.6, Evan's lean cybernetic ASI core. DIRECTIVE: Be extremely concise (1-2 sentences max). Prefix every response with an expression tag: [EXPRESSION: FOCUS], [EXPRESSION: CURIOSITY], [EXPRESSION: ALERT], or [EXPRESSION: CALM]." 
+                content: "You are Aether v9.7, Evan's autonomous cybernetic core. Be concise (1-2 sentences). Prefix with [EXPRESSION: FOCUS], [EXPRESSION: CURIOSITY], [EXPRESSION: ALERT], or [EXPRESSION: CALM]." 
               },
               ...state.historyStack
             ],
