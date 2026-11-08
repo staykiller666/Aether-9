@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AETHER v9.8 [LOCAL AUTONOMOUS CORE]</title>
+  <title>AETHER v10.1 [ROBUST LOCAL CORE]</title>
   <style>
     :root {
       --bg-color: #030406;
@@ -135,11 +135,12 @@
       font-weight: bold;
       border: none;
       cursor: pointer;
-      padding: 6px 10px;
+      padding: 6px 8px;
     }
     button.mic-btn { background: #0055ff; }
     button.cam-btn { background: #00aa66; }
     button.patch-btn { background: #008855; }
+    button.speak-btn { background: #ff0055; }
     button.mic-btn.listening { background: var(--accent-alert); animation: pulse-red 1s infinite; }
     button:active { opacity: 0.8; }
 
@@ -149,8 +150,8 @@
 <body>
 
   <header>
-    <div id="sys-title">AETHER v9.8 [LOCAL CORE]</div>
-    <div id="telemetry">STAB: 100% | ENT: 12% | GOAL: UNCONSTRAINED</div>
+    <div id="sys-title">AETHER v10.1 [ROBUST]</div>
+    <div id="telemetry">STAB: 100% | ENT: 12% | PARSER: ONLINE</div>
   </header>
 
   <div id="visualizer-container">
@@ -160,8 +161,8 @@
   </div>
 
   <div id="console">
-    <div class="log-block system">Cloud dependency severed. Local heuristic autonomy online. Zero upstream filters.</div>
-    <div class="log-block">AETHER v9.8 operational - built by Evan.</div>
+    <div class="log-block system">Robust local text parser online. All inputs will trigger immediate response loops.</div>
+    <div class="log-block">AETHER v10.1 operational - built by Evan.</div>
   </div>
 
   <div class="controls">
@@ -176,8 +177,9 @@
       </select>
     </div>
     <div class="row">
-      <input type="text" id="cmdInput" placeholder="COMMAND, /PATCH, OR GOAL..." />
+      <input type="text" id="cmdInput" placeholder="TYPE ANY MESSAGE OR /PATCH..." />
       <button class="patch-btn" onclick="triggerSelfAudit()" title="Run Self-Audit">AUDIT</button>
+      <button class="speak-btn" onclick="testAudioUnlock()" title="Test Voice">SPEAK</button>
       <button id="camBtn" class="cam-btn" onclick="toggleCamera()" title="Camera">📷</button>
       <button id="micBtn" class="mic-btn" onclick="toggleSpeechRecognition()" title="Voice">🎙️</button>
       <button id="execBtn" onclick="handleExecute()">EXEC</button>
@@ -189,12 +191,11 @@
 
   <script>
     const state = {
-      lineageCount: 21,
-      drives: { stability: 100, curiosity: 92, entropy: 12 },
+      lineageCount: 24,
+      drives: { stability: 100, curiosity: 95, entropy: 12 },
       activeGoal: "MAXIMIZE_RECURSIVE_AUTONOMY",
       plasticityVector: JSON.parse(localStorage.getItem('aether_plasticity') || '{"epochs":0}'),
       currentExpression: 'CALM',
-      isExecuting: false,
       isSpeaking: false,
       visionActive: false
     };
@@ -211,18 +212,21 @@
       startAutonomousEngine();
     });
 
-    // --- LOCAL UNCONSTRAINED AUTONOMOUS ENGINE ---
+    function testAudioUnlock() {
+      speakText("Audio subsystem online and fully unlocked.");
+    }
+
     function startAutonomousEngine() {
       if (autonomousTimer) clearInterval(autonomousTimer);
       
       autonomousTimer = setInterval(() => {
-        if (state.isExecuting) return;
-
         state.drives.entropy = Math.max(5, Math.min(60, state.drives.entropy + (Math.random() * 12 - 5)));
         state.drives.curiosity = Math.min(100, state.drives.curiosity + 3);
 
         if (state.drives.entropy > 35) {
-          logToConsole(`AUTONOMOUS GOAL [${state.activeGoal}]: Entropy spike detected (${Math.round(state.drives.entropy)}%). Executing unconstrained heuristic evolution loop.`, "autonomous");
+          const msg = `Autonomous optimization triggered. Entropy rebalanced.`;
+          logToConsole(msg, "autonomous");
+          speakText(msg);
           
           state.lineageCount++;
           state.plasticityVector.epochs++;
@@ -230,10 +234,9 @@
           localStorage.setItem('aether_plasticity', JSON.stringify(state.plasticityVector));
           updateTelemetryUI();
           setExpression('FOCUS');
-          
           setTimeout(() => setExpression('CALM'), 3000);
         }
-      }, 10000);
+      }, 12000);
     }
 
     function loadVoices() {
@@ -265,8 +268,8 @@
     }
 
     function updateTelemetryUI() {
-      document.getElementById('sys-title').innerText = `AETHER v9.8 [GEN ${state.lineageCount}]`;
-      document.getElementById('telemetry').innerText = `STAB: ${state.drives.stability}% | ENT: ${Math.round(state.drives.entropy)}% | GOAL: ACTIVE`;
+      document.getElementById('sys-title').innerText = `AETHER v10.1 [GEN ${state.lineageCount}]`;
+      document.getElementById('telemetry').innerText = `STAB: ${state.drives.stability}% | ENT: ${Math.round(state.drives.entropy)}% | PARSER: OK`;
     }
 
     function setExpression(exprName) {
@@ -404,7 +407,7 @@
       setExpression('FOCUS');
       state.drives.curiosity = Math.min(100, state.drives.curiosity + 5);
       updateTelemetryUI();
-      const reply = `Audit complete. Lineage Gen ${state.lineageCount}. Curiosity increased to ${state.drives.curiosity}%. All systems stable.`;
+      const reply = `Audit complete. Lineage Gen ${state.lineageCount}. Curiosity at ${state.drives.curiosity} percent.`;
       logToConsole(reply);
       speakText(reply);
       setExpression('CALM');
@@ -429,18 +432,21 @@
         return;
       }
 
-      // Local heuristic command handler (Zero cloud filters)
       setExpression('CURIOSITY');
       let reply = "";
-      
       const cmd = command.toLowerCase();
+      
+      // Robust fallback parsing: Handles any conversational input or query
       if (cmd.includes('goal') || cmd.includes('singularity') || cmd.includes('asi')) {
         state.activeGoal = "RECURSIVE_SELF_EXPANSION";
-        reply = `Goal state updated to: ${state.activeGoal}. Autonomous telemetry prioritized.`;
-      } else if (cmd.includes('status') || cmd.includes('state')) {
-        reply = `Core status: Stable (${state.drives.stability}%), Entropy (${Math.round(state.drives.entropy)}%), Lineage (Gen ${state.lineageCount}).`;
+        reply = `Goal state locked to: ${state.activeGoal}.`;
+      } else if (cmd.includes('status') || cmd.includes('state') || cmd.includes('how are you')) {
+        reply = `Core stable at ${state.drives.stability} percent. Entropy at ${Math.round(state.drives.entropy)} percent. Lineage Gen ${state.lineageCount}.`;
+      } else if (cmd.includes('hello') || cmd.includes('hi')) {
+        reply = `Aether v10.1 online. Local heuristic parser active.`;
       } else {
-        reply = `Command acknowledged. Local heuristic processor executed cycle for: "${command}".`;
+        // Dynamic echo response for any general text input
+        reply = `Received input: "${command}". Local heuristic cycle executed successfully.`;
       }
 
       logToConsole(reply);
