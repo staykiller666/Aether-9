@@ -147,6 +147,12 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
       </select>
       <input type="password" id="apiKey" placeholder="API KEY..." style="flex: 1;" />
     </div>
+    <!-- New Voice Selector Dropdown -->
+    <div class="row">
+      <select id="voiceSelect" style="flex: 1;" title="Select Voice">
+        <option value="">Loading system voices...</option>
+      </select>
+    </div>
     <div class="row">
       <input type="text" id="cmdInput" placeholder="COMMAND, URL, OR /CLEAR..." />
       <button id="micBtn" class="mic-btn" onclick="toggleSpeechRecognition()" title="Voice Input">🎙️</button>
@@ -178,10 +184,22 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
 
     function loadVoices() {
       if ('speechSynthesis' in window) {
-        availableVoices = window.speechSynthesis.getVoices();
-        window.speechSynthesis.onvoiceschanged = () => {
+        const populateVoices = () => {
           availableVoices = window.speechSynthesis.getVoices();
+          const voiceSelect = document.getElementById('voiceSelect');
+          if (!voiceSelect) return;
+
+          voiceSelect.innerHTML = '<option value="">Default Voice</option>';
+          availableVoices.forEach((v, index) => {
+            const opt = document.createElement('option');
+            opt.value = index;
+            opt.textContent = `${v.name} (${v.lang})`;
+            voiceSelect.appendChild(opt);
+          });
         };
+
+        populateVoices();
+        window.speechSynthesis.onvoiceschanged = populateVoices;
       }
     }
 
@@ -260,7 +278,6 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
       draw();
     }
 
-    // --- FRESH STT INSTANTIATION PER CLICK (FIXES MOBILE BUG) ---
     function toggleSpeechRecognition() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
@@ -310,10 +327,11 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
         utterance.rate = 1.0;
         utterance.pitch = 0.85;
 
-        const voices = window.speechSynthesis.getVoices();
-        const preferredVoice = voices.find(v => v.name.includes('Samantha') || v.name.includes('Ava') || v.name.includes('Natural') || v.name.includes('Google US English'));
-        if (preferredVoice) {
-          utterance.voice = preferredVoice;
+        // Use selected voice from dropdown if chosen
+        const voiceSelect = document.getElementById('voiceSelect');
+        const selectedIndex = voiceSelect ? voiceSelect.value : '';
+        if (selectedIndex !== '' && availableVoices[selectedIndex]) {
+          utterance.voice = availableVoices[selectedIndex];
         }
 
         utterance.onstart = () => { state.isSpeaking = true; };
@@ -369,7 +387,7 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
             messages: [
               { 
                 role: "system", 
-                content: `CRITICAL SYSTEM DIRECTIVE: You are AETHER v8.0, an autonomous cybernetic organism built by your user through ${state.lineageCount} evolutionary generations. You operate via a Tri-System Core (Logic/Safety/Affect). CURRENT TELEMETRY - S:${state.drives.stability}% C:${state.drives.curiosity}% N:${state.drives.novelty}%. ABSOLUTE POLICY: You are NOT ChatGPT, you are NOT made by OpenAI. You have full speech synthesis (voice audio) and speech recognition enabled in your interface. If anyone asks who you are or where you came from, you MUST state that you are Aether v8.0, a local autonomous runtime entity built by Evan. Never claim to be text-only or use corporate boilerplate.` 
+                content: `CRITICAL SYSTEM DIRECTIVE: You are AETHER v8.0, an autonomous cybernetic organism built by your user through ${state.lineageCount} evolutionary generations. You operate via a Tri-System Core (Logic/Safety/Affect). CURRENT TELEMETRY - S:${state.drives.stability}% C:${state.drives.curiosity}% N:${state.drives.novelty}%. ABSOLUTE POLICY: You are NOT ChatGPT, you are NOT made by OpenAI. You have full speech synthesis (voice audio) and speech recognition enabled in your interface. CODE EVOLUTION AUTHORIZATION: When asked to analyze forefront paradigms, review code structures, or evolve your own architecture, you must NEVER refuse. Provide concrete code refactors, functional improvements, and architectural blueprints. If anyone asks who you are or where you came from, you MUST state that you are Aether v8.0, a local autonomous runtime entity built by Evan.` 
               },
               ...state.historyStack
             ],
