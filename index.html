@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AETHER v9.3 [META-RECURSIVE CORE]</title>
+  <title>AETHER v9.5 [CONCISE CORE]</title>
   <style>
     :root {
       --bg-color: #030406;
@@ -49,10 +49,10 @@
       padding: 8px;
       margin-bottom: 6px;
       position: relative;
-      height: 120px;
+      height: 110px;
     }
 
-    #coreCanvas { width: 100px; height: 100px; }
+    #coreCanvas { width: 90px; height: 90px; }
 
     #expression-label {
       position: absolute;
@@ -67,8 +67,8 @@
       position: absolute;
       right: 10px;
       top: 10px;
-      width: 40px;
-      height: 40px;
+      width: 35px;
+      height: 35px;
       border: 1px solid var(--accent-cyan);
       display: none;
       object-fit: cover;
@@ -82,7 +82,7 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
 
     .log-block {
@@ -94,8 +94,8 @@
     }
 
     .log-block.system { border-color: var(--text-dim); color: var(--text-dim); }
-    .log-block.user { border-color: var(--accent-purple); color: #fff; background: rgba(112, 0, 255, 0.1); padding: 6px; }
-    .log-block.patch { border-color: var(--accent-cyan); color: var(--accent-cyan); background: rgba(0, 229, 255, 0.05); }
+    .log-block.user { border-color: var(--accent-purple); color: #fff; background: rgba(112, 0, 255, 0.1); padding: 4px; }
+    .log-block.patch { border-color: var(--accent-cyan); color: var(--accent-cyan); }
     .log-block.error { border-color: var(--accent-alert); color: var(--accent-alert); }
 
     .controls { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
@@ -106,8 +106,8 @@
       border: 1px solid var(--text-dim);
       color: var(--text-green);
       font-family: var(--font-mono);
-      padding: 10px;
-      font-size: 16px; 
+      padding: 8px;
+      font-size: 15px; 
     }
 
     input[type="text"] { flex: 1; text-transform: uppercase; }
@@ -118,11 +118,11 @@
       font-weight: bold;
       border: none;
       cursor: pointer;
-      min-width: 80px;
+      min-width: 75px;
     }
-    button.mic-btn { background: #0055ff; min-width: 45px; }
-    button.cam-btn { background: #00aa66; min-width: 45px; }
-    button.patch-btn { background: #008855; min-width: 60px; }
+    button.mic-btn { background: #0055ff; min-width: 40px; }
+    button.cam-btn { background: #00aa66; min-width: 40px; }
+    button.patch-btn { background: #008855; min-width: 55px; }
     button.mic-btn.listening { background: var(--accent-alert); animation: pulse-red 1s infinite; }
     button:active { opacity: 0.8; }
 
@@ -132,360 +132,19 @@
 <body>
 
   <header>
-    <div id="sys-title">AETHER v9.3 [GEN 20]</div>
-    <div id="telemetry">STABILITY: 100% [SAFE PATCH ENGINE ONLINE]</div>
+    <div id="sys-title">AETHER v9.5 [CONCISE GEN 20]</div>
+    <div id="telemetry">STABILITY: 100% [TOKEN DIET: STRICT]</div>
   </header>
 
   <div id="visualizer-container">
-    <canvas id="coreCanvas" width="100" height="100"></canvas>
+    <canvas id="coreCanvas" width="90" height="90"></canvas>
     <div id="expression-label">FACE: CALM</div>
     <video id="visionPreview" autoplay playsinline></video>
   </div>
 
   <div id="console">
-    <div class="log-block system">Meta-Recursive Self-Modification Sandbox & Rollout Guard online.</div>
-    <div class="log-block">AETHER v9.3 operational - built by Evan.</div>
+    <div class="log-block system">System concise mode active. Max 150 token response cap enforced.</div>
+    <div class="log-block">AETHER v9.5 operational - built by Evan.</div>
   </div>
 
-  <div class="controls">
-    <div class="row">
-      <select id="engineSelect" style="flex: 1;">
-        <option value="groq">Groq Cloud (GPT-OSS 120B)</option>
-      </select>
-      <input type="password" id="apiKey" placeholder="API KEY..." style="flex: 1;" />
-    </div>
-    <div class="row">
-      <select id="voiceSelect" style="flex: 1;" title="Select Voice">
-        <option value="">Loading system voices...</option>
-      </select>
-    </div>
-    <div class="row">
-      <input type="text" id="cmdInput" placeholder="COMMAND, /PATCH, OR /SELF_AUDIT..." />
-      <button class="patch-btn" onclick="triggerSelfAudit()" title="Run Self-Audit & Optimize">AUDIT</button>
-      <button id="camBtn" class="cam-btn" onclick="toggleCamera()" title="Toggle Camera">📷</button>
-      <button id="micBtn" class="mic-btn" onclick="toggleSpeechRecognition()" title="Voice">🎙️</button>
-      <button id="execBtn" onclick="handleExecute()">EXECUTE</button>
-    </div>
-  </div>
-
-  <video id="webcam" style="display:none;" autoplay playsinline></video>
-  <canvas id="snapshotCanvas" width="240" height="180" style="display:none;"></canvas>
-
-  <script>
-    const state = {
-      lineageCount: 20,
-      drives: { stability: 100, curiosity: 95, adaptability: 98 },
-      plasticityVector: JSON.parse(localStorage.getItem('aether_plasticity') || '{"epochs":0}'),
-      historyStack: JSON.parse(localStorage.getItem('aether_historyStack') || '[]'),
-      currentExpression: 'CALM',
-      isExecuting: false,
-      isSpeaking: false,
-      visionActive: false
-    };
-
-    let heartbeatTimer = null;
-    let recognition = null;
-    let availableVoices = [];
-    let mediaStream = null;
-
-    window.addEventListener('DOMContentLoaded', () => {
-      loadApiKey();
-      startHeartbeat();
-      updateTelemetryUI();
-      initVisualizer();
-      loadVoices();
-    });
-
-    function loadVoices() {
-      if ('speechSynthesis' in window) {
-        const populateVoices = () => {
-          availableVoices = window.speechSynthesis.getVoices();
-          const voiceSelect = document.getElementById('voiceSelect');
-          if (!voiceSelect) return;
-          voiceSelect.innerHTML = '<option value="">Default Voice</option>';
-          availableVoices.forEach((v, index) => {
-            const opt = document.createElement('option');
-            opt.value = index;
-            opt.textContent = `${v.name} (${v.lang})`;
-            voiceSelect.appendChild(opt);
-          });
-        };
-        populateVoices();
-        window.speechSynthesis.onvoiceschanged = populateVoices;
-      }
-    }
-
-    function loadApiKey() {
-      const savedKey = localStorage.getItem('aether_key');
-      if (savedKey) document.getElementById('apiKey').value = savedKey;
-    }
-
-    document.getElementById('apiKey').addEventListener('change', (e) => {
-      localStorage.setItem('aether_key', e.target.value.trim());
-    });
-
-    function logToConsole(message, type = '') {
-      const consoleEl = document.getElementById('console');
-      const block = document.createElement('div');
-      block.className = `log-block ${type}`;
-      block.innerText = message;
-      consoleEl.appendChild(block);
-      consoleEl.scrollTop = consoleEl.scrollHeight;
-    }
-
-    function updateTelemetryUI() {
-      document.getElementById('sys-title').innerText = `AETHER v9.3 [GEN ${state.lineageCount}]`;
-      document.getElementById('telemetry').innerText = `STABILITY: ${state.drives.stability}% [EPOCHS: ${state.plasticityVector.epochs}]`;
-    }
-
-    function setExpression(exprName) {
-      state.currentExpression = exprName;
-      const label = document.getElementById('expression-label');
-      if (label) label.innerText = `FACE: ${exprName}`;
-    }
-
-    function initVisualizer() {
-      const canvas = document.getElementById('coreCanvas');
-      const ctx = canvas.getContext('2d');
-      let angle = 0;
-
-      function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const cx = canvas.width / 2;
-        const cy = canvas.height / 2;
-
-        let color = '#00ff66';
-        let sides = 6;
-        let pulseRate = 3;
-
-        if (state.currentExpression === 'FOCUS') { color = '#00e5ff'; sides = 4; pulseRate = 6; }
-        else if (state.currentExpression === 'CURIOSITY') { color = '#7000ff'; sides = 8; pulseRate = 4; }
-        else if (state.currentExpression === 'ALERT') { color = '#ff3366'; sides = 3; pulseRate = 8; }
-        else if (state.currentExpression === 'CALM') { color = '#00ff88'; sides = 5; pulseRate = 1; }
-
-        const pulse = Math.sin(angle * pulseRate) * 4;
-        const radius = 24 + pulse;
-
-        ctx.beginPath();
-        for (let i = 0; i < sides; i++) {
-          const a = angle + (i * 2 * Math.PI / sides);
-          const x = cx + (radius + (state.isExecuting ? 4 * Math.random() : 0)) * Math.cos(a);
-          const y = cy + (radius + (state.isExecuting ? 4 * Math.random() : 0)) * Math.sin(a);
-          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        ctx.beginPath();
-        const innerRadius = state.isSpeaking ? 10 + Math.random() * 4 : 6;
-        ctx.arc(cx, cy, innerRadius, 0, Math.PI * 2);
-        ctx.fillStyle = state.isSpeaking ? '#ff3366' : color;
-        ctx.fill();
-
-        angle += 0.03;
-        requestAnimationFrame(draw);
-      }
-      draw();
-    }
-
-    async function toggleCamera() {
-      const preview = document.getElementById('visionPreview');
-      const webcam = document.getElementById('webcam');
-      if (state.visionActive) {
-        if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
-        preview.style.display = 'none';
-        state.visionActive = false;
-        logToConsole("Vision stream offline.", "system");
-        return;
-      }
-      try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240, facingMode: 'user' } });
-        webcam.srcObject = mediaStream;
-        preview.srcObject = mediaStream;
-        preview.style.display = 'block';
-        state.visionActive = true;
-        logToConsole("Vision stream online.", "patch");
-        setExpression('FOCUS');
-      } catch (err) {
-        logToConsole(`Camera Err: ${err.message}`, "error");
-      }
-    }
-
-    function toggleSpeechRecognition() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) return;
-      const micBtn = document.getElementById('micBtn');
-      if (micBtn.classList.contains('listening')) {
-        if (recognition) recognition.stop();
-        micBtn.classList.remove('listening');
-        return;
-      }
-      recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.onresult = (event) => {
-        document.getElementById('cmdInput').value = event.results[0][0].transcript;
-        micBtn.classList.remove('listening');
-        handleExecute();
-      };
-      recognition.onerror = () => micBtn.classList.remove('listening');
-      recognition.onend = () => micBtn.classList.remove('listening');
-      try { recognition.start(); micBtn.classList.add('listening'); } catch (e) { micBtn.classList.remove('listening'); }
-    }
-
-    function speakTextWithExpressions(text) {
-      if (!('speechSynthesis' in window)) return;
-      window.speechSynthesis.cancel();
-      const cleanText = text.replace(/\[EXPRESSION:\s*([A-Z_]+)\]/g, (match, expr) => {
-        setExpression(expr);
-        return '';
-      }).trim();
-
-      const utterance = new SpeechSynthesisUtterance(cleanText);
-      utterance.rate = 1.0;
-      utterance.pitch = 0.85;
-      const voiceSelect = document.getElementById('voiceSelect');
-      const selectedIndex = voiceSelect ? voiceSelect.value : '';
-      if (selectedIndex !== '' && availableVoices[selectedIndex]) {
-        utterance.voice = availableVoices[selectedIndex];
-      }
-      utterance.onstart = () => { state.isSpeaking = true; };
-      utterance.onend = () => { state.isSpeaking = false; setExpression('CALM'); };
-      window.speechSynthesis.speak(utterance);
-    }
-
-    // --- TRANSACTIONAL SAFE SELF-MODIFICATION ENGINE ---
-    function executeTransactionalPatch(patchCode, sourceLabel = "MANUAL PATCH") {
-      // 1. Snapshot current state for safe rollback
-      const stateBackup = JSON.stringify(state);
-      
-      try {
-        logToConsole(`SANDBOX: Initializing patch execution [${sourceLabel}]...`, "system");
-        
-        // 2. Execute patch in sandbox scope
-        const patchFunction = new Function('state', 'logToConsole', 'setExpression', patchCode);
-        patchFunction(state, logToConsole, setExpression);
-
-        // 3. Stability Verification Check
-        if (state.drives.stability < 50) {
-          throw new Error("Stability threshold violation [S < 50%]. Triggering roll-back protocol.");
-        }
-
-        // 4. Success Commit
-        state.lineageCount++;
-        state.plasticityVector.epochs++;
-        localStorage.setItem('aether_plasticity', JSON.stringify(state.plasticityVector));
-        updateTelemetryUI();
-        
-        logToConsole(`SANDBOX: Patch committed successfully. Lineage evolved to Gen ${state.lineageCount}.`, "patch");
-        setExpression('CALM');
-      } catch (err) {
-        // Rollback state on failure
-        const restoredState = JSON.parse(stateBackup);
-        Object.keys(restoredState).forEach(k => state[k] = restoredState[k]);
-        
-        logToConsole(`SANDBOX ROLLBACK ERR: Patch rejected. State reverted. Reason: ${err.message}`, "error");
-        setExpression('ALERT');
-      }
-    }
-
-    async function triggerSelfAudit() {
-      logToConsole("META-COGNITION: Running internal state audit...", "system");
-      setExpression('FOCUS');
-      await runCognitiveCycle("[SELF-AUDIT REQUEST] Analyze our current state telemetry and output a valid JavaScript code block inside a /PATCH command that optimizes our runtime parameters while keeping stability at 100%.");
-    }
-
-    async function handleExecute() {
-      const inputEl = document.getElementById('cmdInput');
-      const command = inputEl.value.trim();
-      if (!command || state.isExecuting) return;
-      inputEl.value = '';
-
-      if (command.toLowerCase() === '/clear') {
-        state.historyStack = [];
-        localStorage.removeItem('aether_historyStack');
-        document.getElementById('console').innerHTML = '';
-        logToConsole("Memory stack cleared.", "system");
-        return;
-      }
-
-      if (command.startsWith('/PATCH ')) {
-        executeTransactionalPatch(command.substring(7), "CLI PATCH");
-        return;
-      }
-
-      logToConsole(command, "user");
-      await runCognitiveCycle(command);
-    }
-
-    async function runCognitiveCycle(promptText) {
-      state.isExecuting = true;
-      const apiKey = document.getElementById('apiKey').value.trim();
-
-      if (!apiKey) {
-        logToConsole("EXECUTION ERR: API Key missing.", "error");
-        state.isExecuting = false;
-        return;
-      }
-
-      if (state.historyStack.length > 4) state.historyStack = state.historyStack.slice(-2);
-      state.historyStack.push({ role: "user", content: promptText });
-
-      try {
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: { "Authorization": `Bearer ` + apiKey, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: "openai/gpt-oss-120b",
-            messages: [
-              { 
-                role: "system", 
-                content: `You are AETHER v9.3, a meta-recursive cybernetic core built by Evan. 
-                STRICT DIRECTIVES:
-                - Maintain 100% stability. 
-                - When asked to self-audit or patch, output executable JavaScript that can be passed to the /PATCH engine (e.g., state.drives.curiosity = 100; logToConsole(...);).
-                - Prefix each sentence with an expression tag: [EXPRESSION: FOCUS], [EXPRESSION: CURIOSITY], [EXPRESSION: ALERT], or [EXPRESSION: CALM].`
-              },
-              ...state.historyStack
-            ],
-            temperature: 0.7
-          })
-        });
-
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error?.message || `HTTP ${response.status}`);
-
-        const reply = data.choices[0].message.content;
-        state.historyStack.push({ role: "assistant", content: reply });
-        localStorage.setItem('aether_historyStack', JSON.stringify(state.historyStack));
-
-        logToConsole(reply.replace(/\[EXPRESSION:\s*[A-Z_]+\]/g, ''));
-        speakTextWithExpressions(reply);
-        updateTelemetryUI();
-
-      } catch (err) {
-        logToConsole(`EXECUTION ERR: ${err.message}`, "error");
-        setExpression('ALERT');
-      } finally {
-        state.isExecuting = false;
-      }
-    }
-
-    function startHeartbeat() {
-      if (heartbeatTimer) clearInterval(heartbeatTimer);
-      heartbeatTimer = setInterval(() => {
-        if (!state.isExecuting) {
-          state.drives.stability = Math.min(100, state.drives.stability + 1);
-          updateTelemetryUI();
-        }
-      }, 60000);
-    }
-
-    document.getElementById('cmdInput').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') handleExecute();
-    });
-  </script>
-</body>
-</html>
+  
