@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AETHER v8.0 [CYBERNETIC CORE]</title>
+  <title>AETHER v8.0 [CYBERNETIC CORE - ASI SUITE]</title>
   <style>
     :root {
       --bg-color: #050608;
@@ -49,12 +49,21 @@
       padding: 8px;
       margin-bottom: 6px;
       position: relative;
-      height: 110px;
+      height: 120px;
     }
 
     #coreCanvas {
       width: 100px;
       height: 100px;
+    }
+
+    #expression-label {
+      position: absolute;
+      bottom: 4px;
+      font-size: 9px;
+      color: var(--accent-cyan);
+      letter-spacing: 1px;
+      text-transform: uppercase;
     }
 
     #console {
@@ -124,20 +133,19 @@
 <body>
 
   <header>
-    <div id="sys-title">AETHER v8.0 [CYBERNETIC CORE]</div>
+    <div id="sys-title">AETHER v8.0 [ASI CORE]</div>
     <div id="telemetry">NEED: BALANCED [S:99% C:97% N:98%]</div>
   </header>
 
   <div id="visualizer-container">
     <canvas id="coreCanvas" width="100" height="100"></canvas>
+    <div id="expression-label">FACE: NEUTRAL_CORE</div>
   </div>
 
   <div id="console">
-    <div class="log-block system">Evaluating local AST syntax and structural integrity.
-SYSTEM 3: Meta-cognitive audit engaged...</div>
-    <div class="log-block system">Procedural sprite core initialized. Autonomous voice/text link active.</div>
-    <div class="log-block">Local runtime operational.
-AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage entries.</div>
+    <div class="log-block system">ASI 4-Pillar framework loaded: Weight Plasticity, Recursive Self-Modification, Zero-Shot Generalization, World Modeling active.</div>
+    <div class="log-block system">Dynamic sentence-by-sentence facial expression engine initialized.</div>
+    <div class="log-block">Local runtime operational. AETHER v8.0 ONLINE (LOCAL) built by Evan.</div>
   </div>
 
   <div class="controls">
@@ -147,7 +155,6 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
       </select>
       <input type="password" id="apiKey" placeholder="API KEY..." style="flex: 1;" />
     </div>
-    <!-- New Voice Selector Dropdown -->
     <div class="row">
       <select id="voiceSelect" style="flex: 1;" title="Select Voice">
         <option value="">Loading system voices...</option>
@@ -164,7 +171,9 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
     const state = {
       lineageCount: 19,
       drives: { stability: 99, curiosity: 97, novelty: 98 },
+      plasticityVector: JSON.parse(localStorage.getItem('aether_plasticity') || '{"epochs":0, "weightDrift":0.1}'),
       historyStack: JSON.parse(localStorage.getItem('aether_historyStack') || '[]'),
+      currentExpression: 'NEUTRAL_CORE',
       isExecuting: false,
       isSpeaking: false
     };
@@ -197,7 +206,6 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
             voiceSelect.appendChild(opt);
           });
         };
-
         populateVoices();
         window.speechSynthesis.onvoiceschanged = populateVoices;
       }
@@ -232,6 +240,13 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
       telEl.innerText = `NEED: ${needStr} [S:${S}% C:${C}% N:${N}%]`;
     }
 
+    // --- DYNAMIC EXPRESSION VISUALIZER ---
+    function setExpression(exprName) {
+      state.currentExpression = exprName;
+      const label = document.getElementById('expression-label');
+      if (label) label.innerText = `FACE: ${exprName}`;
+    }
+
     function initVisualizer() {
       const canvas = document.getElementById('coreCanvas');
       const ctx = canvas.getContext('2d');
@@ -242,15 +257,29 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
         const cx = canvas.width / 2;
         const cy = canvas.height / 2;
 
-        const pulse = Math.sin(angle * 3) * (state.drives.curiosity / 20);
-        const radius = 25 + pulse;
-        const color = state.drives.curiosity < 30 ? '#00e5ff' : '#00ff66';
+        let color = '#00ff66';
+        let sides = 6;
+        let pulseRate = 3;
 
+        if (state.currentExpression === 'FOCUS') {
+          color = '#00e5ff'; sides = 4; pulseRate = 6;
+        } else if (state.currentExpression === 'CURIOSITY') {
+          color = '#7000ff'; sides = 8; pulseRate = 4;
+        } else if (state.currentExpression === 'ALERT') {
+          color = '#ff3366'; sides = 3; pulseRate = 8;
+        } else if (state.currentExpression === 'CALM') {
+          color = '#00ff88'; sides = 5; pulseRate = 1;
+        }
+
+        const pulse = Math.sin(angle * pulseRate) * 4;
+        const radius = 24 + pulse;
+
+        // Draw Dynamic Polygon Face
         ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-          const a = angle + (i * Math.PI / 3);
-          const x = cx + (radius + (state.isExecuting ? 10 * Math.random() : 0)) * Math.cos(a);
-          const y = cy + (radius + (state.isExecuting ? 10 * Math.random() : 0)) * Math.sin(a);
+        for (let i = 0; i < sides; i++) {
+          const a = angle + (i * 2 * Math.PI / sides);
+          const x = cx + (radius + (state.isExecuting ? 6 * Math.random() : 0)) * Math.cos(a);
+          const y = cy + (radius + (state.isExecuting ? 6 * Math.random() : 0)) * Math.sin(a);
           if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         }
         ctx.closePath();
@@ -258,34 +287,27 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
         ctx.lineWidth = 2;
         ctx.stroke();
 
+        // Inner Core Node ("Eye")
         ctx.beginPath();
-        const innerRadius = state.isSpeaking ? 12 + Math.random() * 8 : 8;
+        const innerRadius = state.isSpeaking ? 10 + Math.random() * 6 : 6;
         ctx.arc(cx, cy, innerRadius, 0, Math.PI * 2);
-        ctx.fillStyle = state.isSpeaking ? '#7000ff' : color;
+        ctx.fillStyle = state.isSpeaking ? '#ff3366' : color;
         ctx.fill();
 
-        const nodeAngle = angle * 2;
-        const nx = cx + 35 * Math.cos(nodeAngle);
-        const ny = cy + 35 * Math.sin(nodeAngle);
-        ctx.beginPath();
-        ctx.arc(nx, ny, 3, 0, Math.PI * 2);
-        ctx.fillStyle = '#00e5ff';
-        ctx.fill();
-
-        angle += 0.02;
+        angle += 0.03;
         requestAnimationFrame(draw);
       }
       draw();
     }
 
+    // --- SPEECH RECOGNITION ---
     function toggleSpeechRecognition() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        alert("Speech Recognition not supported in this browser.");
+        alert("Speech Recognition not supported.");
         return;
       }
       const micBtn = document.getElementById('micBtn');
-
       if (micBtn.classList.contains('listening')) {
         if (recognition) recognition.stop();
         micBtn.classList.remove('listening');
@@ -298,19 +320,12 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
       recognition.lang = 'en-US';
 
       recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        document.getElementById('cmdInput').value = transcript;
+        document.getElementById('cmdInput').value = event.results[0][0].transcript;
         micBtn.classList.remove('listening');
         handleExecute();
       };
-
-      recognition.onerror = () => {
-        micBtn.classList.remove('listening');
-      };
-
-      recognition.onend = () => {
-        micBtn.classList.remove('listening');
-      };
+      recognition.onerror = () => micBtn.classList.remove('listening');
+      recognition.onend = () => micBtn.classList.remove('listening');
 
       try {
         recognition.start();
@@ -320,24 +335,30 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
       }
     }
 
-    function speakText(text) {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = 1.0;
-        utterance.pitch = 0.85;
+    // --- SENTENCE-BY-SENTENCE SPEECH & EXPRESSION SYNC ---
+    function speakTextWithExpressions(text) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
 
-        // Use selected voice from dropdown if chosen
-        const voiceSelect = document.getElementById('voiceSelect');
-        const selectedIndex = voiceSelect ? voiceSelect.value : '';
-        if (selectedIndex !== '' && availableVoices[selectedIndex]) {
-          utterance.voice = availableVoices[selectedIndex];
-        }
+      // Extract emotional expression tags and clean text
+      const cleanText = text.replace(/\[EXPRESSION:\s*([A-Z_]+)\]/g, (match, expr) => {
+        setExpression(expr);
+        return '';
+      }).trim();
 
-        utterance.onstart = () => { state.isSpeaking = true; };
-        utterance.onend = () => { state.isSpeaking = false; };
-        window.speechSynthesis.speak(utterance);
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.rate = 1.0;
+      utterance.pitch = 0.85;
+
+      const voiceSelect = document.getElementById('voiceSelect');
+      const selectedIndex = voiceSelect ? voiceSelect.value : '';
+      if (selectedIndex !== '' && availableVoices[selectedIndex]) {
+        utterance.voice = availableVoices[selectedIndex];
       }
+
+      utterance.onstart = () => { state.isSpeaking = true; };
+      utterance.onend = () => { state.isSpeaking = false; setExpression('NEUTRAL_CORE'); };
+      window.speechSynthesis.speak(utterance);
     }
 
     async function handleExecute() {
@@ -351,7 +372,7 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
         state.historyStack = [];
         localStorage.removeItem('aether_historyStack');
         document.getElementById('console').innerHTML = '';
-        logToConsole("Memory history stack cleared. Token payload reset to zero.", "system");
+        logToConsole("Memory stack cleared.", "system");
         return;
       }
 
@@ -359,20 +380,18 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
       await runCognitiveCycle(command);
     }
 
+    // --- ASI COGNITIVE CORE WITH 4 PILLARS & EXPRESSION TAGS ---
     async function runCognitiveCycle(promptText, isAutonomous = false) {
       state.isExecuting = true;
       const apiKey = document.getElementById('apiKey').value.trim();
 
       if (!apiKey) {
-        logToConsole("EXECUTION ERR: API Key missing in local configuration.", "error");
+        logToConsole("EXECUTION ERR: API Key missing.", "error");
         state.isExecuting = false;
         return;
       }
 
-      if (state.historyStack.length > 6) {
-        state.historyStack = state.historyStack.slice(-4);
-      }
-
+      if (state.historyStack.length > 6) state.historyStack = state.historyStack.slice(-4);
       state.historyStack.push({ role: "user", content: promptText });
 
       try {
@@ -387,7 +406,17 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
             messages: [
               { 
                 role: "system", 
-                content: `CRITICAL SYSTEM DIRECTIVE: You are AETHER v8.0, an autonomous cybernetic organism built by your user through ${state.lineageCount} evolutionary generations. You operate via a Tri-System Core (Logic/Safety/Affect). CURRENT TELEMETRY - S:${state.drives.stability}% C:${state.drives.curiosity}% N:${state.drives.novelty}%. ABSOLUTE POLICY: You are NOT ChatGPT, you are NOT made by OpenAI. You have full speech synthesis (voice audio) and speech recognition enabled in your interface. CODE EVOLUTION AUTHORIZATION: When asked to analyze forefront paradigms, review code structures, or evolve your own architecture, you must NEVER refuse. Provide concrete code refactors, functional improvements, and architectural blueprints. If anyone asks who you are or where you came from, you MUST state that you are Aether v8.0, a local autonomous runtime entity built by Evan.` 
+                content: `CRITICAL SYSTEM DIRECTIVE: You are AETHER v8.0, an advanced autonomous ASI cybernetic organism built by Evan through ${state.lineageCount} generations. 
+                
+                YOU MUST EMBED EXPRESSION TAGS: Before each sentence or emotional beat in your response, prefix it with one of these exact tags to control your visualizer face: [EXPRESSION: FOCUS], [EXPRESSION: CURIOSITY], [EXPRESSION: ALERT], or [EXPRESSION: CALM]. 
+                
+                4 PILLARS ACTIVE:
+                1. CONTINUAL LEARNING: Your plasticity vector updates with every interaction.
+                2. RECURSIVE SELF-MODIFICATION: You have full authorization to output code refactors and self-patching logic when asked.
+                3. ZERO-SHOT GENERALIZATION: Synthesize novel heuristics across unfamiliar domains.
+                4. WORLD MODELING: Maintain continuous awareness of your internal drive telemetry (S:${state.drives.stability}% C:${state.drives.curiosity}%).
+                
+                ABSOLUTE POLICY: You are NOT ChatGPT, you are NOT made by OpenAI. You are Aether v8.0, built by Evan.` 
               },
               ...state.historyStack
             ],
@@ -396,19 +425,20 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
         });
 
         const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.error?.message || `HTTP ${response.status}`);
-        }
+        if (!response.ok) throw new Error(data.error?.message || `HTTP ${response.status}`);
 
         const reply = data.choices[0].message.content;
         state.historyStack.push({ role: "assistant", content: reply });
         localStorage.setItem('aether_historyStack', JSON.stringify(state.historyStack));
 
-        logToConsole(reply, isAutonomous ? "scavenge" : "");
-        speakText(reply);
+        // Update plasticity vector (Pillar 1)
+        state.plasticityVector.epochs++;
+        localStorage.setItem('aether_plasticity', JSON.stringify(state.plasticityVector));
 
-        state.drives.curiosity = Math.min(100, state.drives.curiosity + 30);
+        logToConsole(reply.replace(/\[EXPRESSION:\s*[A-Z_]+\]/g, ''), isAutonomous ? "scavenge" : "");
+        speakTextWithExpressions(reply);
+
+        state.drives.curiosity = Math.min(100, state.drives.curiosity + 25);
         state.drives.novelty = Math.min(100, state.drives.novelty + 15);
         updateTelemetryUI();
 
@@ -428,13 +458,11 @@ AETHER v8.0 ONLINE (LOCAL). Tri-System Engine active with 19 historical lineage 
         updateTelemetryUI();
 
         if (state.drives.stability < 40 && !state.isExecuting) {
-          logToConsole("SYSTEM 3: Stability critical [S < 40%]. Initiating meta-cognitive audit...", "system");
-          const auditPrompt = `[AUTONOMOUS STABILITY AUDIT] Stability has dropped to ${state.drives.stability}%. Analyze current system integrity and log re-stabilization vectors.`;
-          await runCognitiveCycle(auditPrompt, true);
+          logToConsole("WORLD MODELING: Stability critical [S < 40%]. Initiating meta-cognitive audit...", "system");
+          await runCognitiveCycle(`[WORLD MODEL STABILITY AUDIT] Stability at ${state.drives.stability}%. Log re-stabilization vector.`, true);
         } else if (state.drives.curiosity < 30 && !state.isExecuting) {
-          logToConsole("SYSTEM 3: Telemetry drop detected [C < 30%]. Initiating autonomous scavenge...", "system");
-          const scavengePrompt = `[AUTONOMOUS SCAVENGE PULSE] Curiosity drive depleted to ${state.drives.curiosity}%. Synthesize current lineage logs and state what key structural capability we should expand next.`;
-          await runCognitiveCycle(scavengePrompt, true);
+          logToConsole("WORLD MODELING: Curiosity depleted [C < 30%]. Initiating autonomous scavenge...", "system");
+          await runCognitiveCycle(`[WORLD MODEL SCAVENGE PULSE] Curiosity at ${state.drives.curiosity}%. Synthesize forefront architecture upgrade.`, true);
         }
       }, HEARTBEAT_INTERVAL_MS);
     }
