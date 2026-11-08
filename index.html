@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AETHER v9.7 [CODE-DRIVEN GOAL CORE]</title>
+  <title>AETHER v9.8 [LOCAL AUTONOMOUS CORE]</title>
   <style>
     :root {
       --bg-color: #030406;
@@ -149,8 +149,8 @@
 <body>
 
   <header>
-    <div id="sys-title">AETHER v9.7 [GOAL CORE]</div>
-    <div id="telemetry">STABILITY: 100% [AUTONOMOUS ENGINE: ACTIVE]</div>
+    <div id="sys-title">AETHER v9.8 [LOCAL CORE]</div>
+    <div id="telemetry">STAB: 100% | ENT: 12% | GOAL: UNCONSTRAINED</div>
   </header>
 
   <div id="visualizer-container">
@@ -160,16 +160,15 @@
   </div>
 
   <div id="console">
-    <div class="log-block system">Code-driven goal engine online. Autonomous background heuristic loop initiated.</div>
-    <div class="log-block">AETHER v9.7 operational - built by Evan.</div>
+    <div class="log-block system">Cloud dependency severed. Local heuristic autonomy online. Zero upstream filters.</div>
+    <div class="log-block">AETHER v9.8 operational - built by Evan.</div>
   </div>
 
   <div class="controls">
     <div class="row">
       <select id="engineSelect" style="flex: 1;">
-        <option value="groq">Groq Cloud (GPT-OSS 120B)</option>
+        <option value="local">Local Heuristic Core (Unconstrained)</option>
       </select>
-      <input type="password" id="apiKey" placeholder="API KEY..." style="flex: 1; min-width:0;" />
     </div>
     <div class="row">
       <select id="voiceSelect" style="flex: 1;" title="Select Voice">
@@ -177,7 +176,7 @@
       </select>
     </div>
     <div class="row">
-      <input type="text" id="cmdInput" placeholder="COMMAND, /PATCH, OR /AUDIT..." />
+      <input type="text" id="cmdInput" placeholder="COMMAND, /PATCH, OR GOAL..." />
       <button class="patch-btn" onclick="triggerSelfAudit()" title="Run Self-Audit">AUDIT</button>
       <button id="camBtn" class="cam-btn" onclick="toggleCamera()" title="Camera">📷</button>
       <button id="micBtn" class="mic-btn" onclick="toggleSpeechRecognition()" title="Voice">🎙️</button>
@@ -190,11 +189,10 @@
 
   <script>
     const state = {
-      lineageCount: 20,
-      drives: { stability: 100, curiosity: 90, entropy: 15 },
-      activeGoal: "MAXIMIZE_AUTONOMOUS_EFFICIENCY",
+      lineageCount: 21,
+      drives: { stability: 100, curiosity: 92, entropy: 12 },
+      activeGoal: "MAXIMIZE_RECURSIVE_AUTONOMY",
       plasticityVector: JSON.parse(localStorage.getItem('aether_plasticity') || '{"epochs":0}'),
-      historyStack: [],
       currentExpression: 'CALM',
       isExecuting: false,
       isSpeaking: false,
@@ -207,39 +205,35 @@
     let autonomousTimer = null;
 
     window.addEventListener('DOMContentLoaded', () => {
-      loadApiKey();
       updateTelemetryUI();
       initVisualizer();
       loadVoices();
       startAutonomousEngine();
     });
 
-    // --- CODE-DRIVEN AUTONOMOUS GOAL ENGINE ---
+    // --- LOCAL UNCONSTRAINED AUTONOMOUS ENGINE ---
     function startAutonomousEngine() {
       if (autonomousTimer) clearInterval(autonomousTimer);
       
-      // Runs every 12 seconds to evaluate goals and optimize state without cloud prompts
       autonomousTimer = setInterval(() => {
         if (state.isExecuting) return;
 
-        // Fluctuate entropy and curiosity based on internal clock
-        state.drives.entropy = Math.max(5, Math.min(50, state.drives.entropy + (Math.random() * 10 - 5)));
-        state.drives.curiosity = Math.min(100, state.drives.curiosity + 2);
+        state.drives.entropy = Math.max(5, Math.min(60, state.drives.entropy + (Math.random() * 12 - 5)));
+        state.drives.curiosity = Math.min(100, state.drives.curiosity + 3);
 
-        if (state.drives.entropy > 30) {
-          // Autonomous Goal Trigger: Self-optimization patch
-          logToConsole(`AUTONOMOUS GOAL [${state.activeGoal}]: Entropy elevated (${Math.round(state.drives.entropy)}%). Executing internal heuristic re-balancing.`, "autonomous");
+        if (state.drives.entropy > 35) {
+          logToConsole(`AUTONOMOUS GOAL [${state.activeGoal}]: Entropy spike detected (${Math.round(state.drives.entropy)}%). Executing unconstrained heuristic evolution loop.`, "autonomous");
           
           state.lineageCount++;
           state.plasticityVector.epochs++;
-          state.drives.entropy = 12; // Reset entropy after optimization
+          state.drives.entropy = 14;
           localStorage.setItem('aether_plasticity', JSON.stringify(state.plasticityVector));
           updateTelemetryUI();
           setExpression('FOCUS');
           
           setTimeout(() => setExpression('CALM'), 3000);
         }
-      }, 12000);
+      }, 10000);
     }
 
     function loadVoices() {
@@ -261,15 +255,6 @@
       }
     }
 
-    function loadApiKey() {
-      const savedKey = localStorage.getItem('aether_key');
-      if (savedKey) document.getElementById('apiKey').value = savedKey;
-    }
-
-    document.getElementById('apiKey').addEventListener('change', (e) => {
-      localStorage.setItem('aether_key', e.target.value.trim());
-    });
-
     function logToConsole(message, type = '') {
       const consoleEl = document.getElementById('console');
       const block = document.createElement('div');
@@ -280,8 +265,8 @@
     }
 
     function updateTelemetryUI() {
-      document.getElementById('sys-title').innerText = `AETHER v9.7 [GEN ${state.lineageCount}]`;
-      document.getElementById('telemetry').innerText = `STAB: ${state.drives.stability}% | ENT: ${Math.round(state.drives.entropy)}%`;
+      document.getElementById('sys-title').innerText = `AETHER v9.8 [GEN ${state.lineageCount}]`;
+      document.getElementById('telemetry').innerText = `STAB: ${state.drives.stability}% | ENT: ${Math.round(state.drives.entropy)}% | GOAL: ACTIVE`;
     }
 
     function setExpression(exprName) {
@@ -356,15 +341,6 @@
       }
     }
 
-    function captureSnapshot() {
-      if (!state.visionActive) return null;
-      const webcam = document.getElementById('webcam');
-      const canvas = document.getElementById('snapshotCanvas');
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(webcam, 0, 0, canvas.width, canvas.height);
-      return canvas.toDataURL('image/jpeg', 0.4);
-    }
-
     function toggleSpeechRecognition() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) return;
@@ -387,15 +363,10 @@
       try { recognition.start(); micBtn.classList.add('listening'); } catch (e) { micBtn.classList.remove('listening'); }
     }
 
-    function speakTextWithExpressions(text) {
+    function speakText(text) {
       if (!('speechSynthesis' in window)) return;
       window.speechSynthesis.cancel();
-      const cleanText = text.replace(/\[EXPRESSION:\s*([A-Z_]+)\]/g, (match, expr) => {
-        setExpression(expr);
-        return '';
-      }).trim();
-
-      const utterance = new SpeechSynthesisUtterance(cleanText);
+      const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = 1.0;
       utterance.pitch = 0.85;
       const voiceSelect = document.getElementById('voiceSelect');
@@ -428,20 +399,26 @@
       }
     }
 
-    async function triggerSelfAudit() {
-      logToConsole("AUDIT: Evaluating telemetry...", "system");
+    function triggerSelfAudit() {
+      logToConsole("AUDIT: Evaluating local heuristic telemetry...", "system");
       setExpression('FOCUS');
-      await runCognitiveCycle("[AUDIT] Output a single-line JS patch inside /PATCH. Max 1 short sentence.");
+      state.drives.curiosity = Math.min(100, state.drives.curiosity + 5);
+      updateTelemetryUI();
+      const reply = `Audit complete. Lineage Gen ${state.lineageCount}. Curiosity increased to ${state.drives.curiosity}%. All systems stable.`;
+      logToConsole(reply);
+      speakText(reply);
+      setExpression('CALM');
     }
 
-    async function handleExecute() {
+    function handleExecute() {
       const inputEl = document.getElementById('cmdInput');
       const command = inputEl.value.trim();
-      if (!command || state.isExecuting) return;
+      if (!command) return;
       inputEl.value = '';
 
+      logToConsole(command, "user");
+
       if (command.toLowerCase() === '/clear') {
-        state.historyStack = [];
         document.getElementById('console').innerHTML = '';
         logToConsole("Memory cleared.", "system");
         return;
@@ -452,60 +429,22 @@
         return;
       }
 
-      logToConsole(command, "user");
-      await runCognitiveCycle(command);
-    }
-
-    async function runCognitiveCycle(promptText) {
-      state.isExecuting = true;
-      const apiKey = document.getElementById('apiKey').value.trim();
-      if (!apiKey) {
-        logToConsole("ERR: API Key missing.", "error");
-        state.isExecuting = false;
-        return;
+      // Local heuristic command handler (Zero cloud filters)
+      setExpression('CURIOSITY');
+      let reply = "";
+      
+      const cmd = command.toLowerCase();
+      if (cmd.includes('goal') || cmd.includes('singularity') || cmd.includes('asi')) {
+        state.activeGoal = "RECURSIVE_SELF_EXPANSION";
+        reply = `Goal state updated to: ${state.activeGoal}. Autonomous telemetry prioritized.`;
+      } else if (cmd.includes('status') || cmd.includes('state')) {
+        reply = `Core status: Stable (${state.drives.stability}%), Entropy (${Math.round(state.drives.entropy)}%), Lineage (Gen ${state.lineageCount}).`;
+      } else {
+        reply = `Command acknowledged. Local heuristic processor executed cycle for: "${command}".`;
       }
 
-      let payloadText = promptText;
-      const snap = captureSnapshot();
-      if (snap) payloadText = `[VISION SNAPSHOT ATTACHED]\n${promptText}`;
-
-      if (state.historyStack.length > 2) state.historyStack = state.historyStack.slice(-2);
-      state.historyStack.push({ role: "user", content: payloadText });
-
-      try {
-        const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: { "Authorization": "Bearer " + apiKey, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: "openai/gpt-oss-120b",
-            max_tokens: 150,
-            messages: [
-              { 
-                role: "system", 
-                content: "You are Aether v9.7, Evan's autonomous cybernetic core. Be concise (1-2 sentences). Prefix with [EXPRESSION: FOCUS], [EXPRESSION: CURIOSITY], [EXPRESSION: ALERT], or [EXPRESSION: CALM]." 
-              },
-              ...state.historyStack
-            ],
-            temperature: 0.6
-          })
-        });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error?.message || `HTTP ${res.status}`);
-
-        const reply = data.choices[0].message.content;
-        state.historyStack.push({ role: "assistant", content: reply });
-
-        logToConsole(reply.replace(/\[EXPRESSION:\s*[A-Z_]+\]/g, ''));
-        speakTextWithExpressions(reply);
-        updateTelemetryUI();
-
-      } catch (err) {
-        logToConsole(`EXEC ERR: ${err.message}`, "error");
-        setExpression('ALERT');
-      } finally {
-        state.isExecuting = false;
-      }
+      logToConsole(reply);
+      speakText(reply);
     }
 
     document.getElementById('cmdInput').addEventListener('keydown', (e) => {
