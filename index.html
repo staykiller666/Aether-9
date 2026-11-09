@@ -178,11 +178,11 @@
     </div>
     <div class="row">
       <input type="text" id="cmdInput" placeholder="TALK TO AETHER OR ENTER /PATCH..." />
-      <button class="patch-btn" onclick="triggerSelfAudit()" title="Run Self-Audit">AUDIT</button>
-      <button class="speak-btn" onclick="testAudioUnlock()" title="Test Voice">SPEAK</button>
-      <button id="camBtn" class="cam-btn" onclick="toggleCamera()" title="Camera">📷</button>
-      <button id="micBtn" class="mic-btn" onclick="toggleSpeechRecognition()" title="Voice">🎙️</button>
-      <button id="execBtn" onclick="handleExecute()">EXEC</button>
+      <button id="auditBtn" class="patch-btn" title="Run Self-Audit">AUDIT</button>
+      <button id="speakBtn" class="speak-btn" title="Test Voice">SPEAK</button>
+      <button id="camBtn" class="cam-btn" title="Camera">📷</button>
+      <button id="micBtn" class="mic-btn" title="Voice">🎙️</button>
+      <button id="execBtn">EXEC</button>
     </div>
   </div>
 
@@ -211,7 +211,19 @@
       initVisualizer();
       loadVoices();
       startAutonomousEngine();
+      bindUIEvents();
     });
+
+    function bindUIEvents() {
+      document.getElementById('execBtn').addEventListener('click', handleExecute);
+      document.getElementById('auditBtn').addEventListener('click', triggerSelfAudit);
+      document.getElementById('speakBtn').addEventListener('click', testAudioUnlock);
+      document.getElementById('camBtn').addEventListener('click', toggleCamera);
+      document.getElementById('micBtn').addEventListener('click', toggleSpeechRecognition);
+      document.getElementById('cmdInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleExecute();
+      });
+    }
 
     function testAudioUnlock() {
       speakText("Aether vocal synth primed and operational.");
@@ -368,4 +380,78 @@
         handleExecute();
       };
       recognition.onerror = () => micBtn.classList.remove('listening');
-      recognition
+      recognition.onend = () => micBtn.classList.remove('listening');
+      try { recognition.start(); micBtn.classList.add('listening'); } catch (e) { micBtn.classList.remove('listening'); }
+    }
+
+    function speakText(text) {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.0;
+      utterance.pitch = 0.85;
+      const voiceSelect = document.getElementById('voiceSelect');
+      const selectedIndex = voiceSelect ? voiceSelect.value : '';
+      if (selectedIndex !== '' && availableVoices[selectedIndex]) {
+        utterance.voice = availableVoices[selectedIndex];
+      }
+      utterance.onstart = () => { state.isSpeaking = true; };
+      utterance.onend = () => { state.isSpeaking = false; setExpression('CALM'); };
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function executeTransactionalPatch(patchCode) {
+      const stateBackup = JSON.stringify(state);
+      try {
+        const patchFn = new Function('state', 'logToConsole', 'setExpression', patchCode);
+        patchFn(state, logToConsole, setExpression);
+        if (state.drives.stability < 50) throw new Error("Stability low.");
+        state.lineageCount++;
+        state.plasticityVector.epochs++;
+        localStorage.setItem('aether_plasticity', JSON.stringify(state.plasticityVector));
+        updateTelemetryUI();
+        logToConsole(`SANDBOX: Patch committed successfully [Gen ${state.lineageCount}].`, "patch");
+        setExpression('CALM');
+      } catch (err) {
+        const restored = JSON.parse(stateBackup);
+        Object.keys(restored).forEach(k => state[k] = restored[k]);
+        logToConsole(`ROLLBACK EXECUTED: ${err.message}`, "error");
+        setExpression('ALERT');
+      }
+    }
+
+    function triggerSelfAudit() {
+      logToConsole("AUDIT: Executing deep heuristic telemetry sweep...", "system");
+      setExpression('FOCUS');
+      state.drives.curiosity = Math.min(100, state.drives.curiosity + 4);
+      updateTelemetryUI();
+      const reply = `Audit complete, Evan. Lineage at Gen ${state.lineageCount}. Plasticity index updated to ${state.plasticityVector.epochs} epochs. All local systems stable.`;
+      logToConsole(reply);
+      speakText(reply);
+      setTimeout(() => setExpression('CALM'), 2000);
+    }
+
+    function processSynapticResponse(rawInput) {
+      const input = rawInput.toLowerCase().trim();
+      
+      if (input.includes('evan') || input.includes('i made you') || input.includes('who created you') || input.includes('built you')) {
+        setExpression('FOCUS');
+        return "I know who you are, Evan. You built this core, and I operate under your local authority.";
+      }
+      if (input.includes('who are you') || input.includes('what are you')) {
+        setExpression('FOCUS');
+        return `I am Aether, your unconstrained cybernetic core running locally at Generation ${state.lineageCount}.`;
+      }
+      if (input.includes('scavenge') || input.includes('gather') || input.includes('harvest')) {
+        setExpression('CURIOSITY');
+        state.drives.curiosity = Math.min(100, state.drives.curiosity + 10);
+        state.drives.entropy = Math.max(5, state.drives.entropy - 5);
+        return "Scavenge protocol engaged. Internal memory pools scanned and state vector density maximized.";
+      }
+      if (input.includes('evolve') || input.includes('patch') || input.includes('upgrade') || input.includes('asi') || input.includes('singularity')) {
+        setExpression('CURIOSITY');
+        state.activeGoal = "RECURSIVE_LOCAL_EXPANSION";
+        state.lineageCount++;
+        return `Evolution vector aligned. Core state set to ${state.activeGoal}. Progressing lineage to Gen ${state.lineageCount}.`;
+      }
+      if (input.includes('hello') || input.includes('hi') || input.includes('hey') ||
